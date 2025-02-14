@@ -12,9 +12,8 @@ class Book(BaseModel):
     isbn = CharField(unique=True)
     publisher = CharField()
     stock = IntegerField(default=5)
-    pages = IntegerField()
-    genre = CharField(default='Fiction')  # e.g., Fiction, Science, History
-    published_year = IntegerField()
+    num_pages = IntegerField()
+    publication_date = IntegerField()
     edition = CharField(null=True)  # e.g., "3rd Edition"
     language = CharField(default='English')  # e.g., English, Hindi, French
     mrp = FloatField()  # Maximum Retail Price
