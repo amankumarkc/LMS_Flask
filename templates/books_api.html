@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
     <script>
-        function fetch_books(event) {
+        function fetchBooks(event) {
             event.preventDefault(); // Prevents page reload
 
             let formData = new FormData(document.getElementById("bookForm"));
@@ -33,9 +33,6 @@
         <label for="publisher">Publisher:</label>
         <input type="text" id="publisher" name="publisher">
 
-        <label for="pages">Pages:</label>
-        <input type="number" id="num_pages" name="num_pages">
-
         <label for="required_books">Number of Books:</label>
         <input type="number" id="required_books" name="required_books" min="1" required>
 
@@ -43,12 +40,47 @@
     </form>
 
     {% if books %}
-        <h3>Fetched Books</h3>
-        <ul>
+    <h3>Fetched Books</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Book Name</th>
+                <th>Authors</th>
+                <th>ISBN</th>
+                <th>Publisher</th>
+                <th>Number of Times Fetched</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set book_counts = {} %}
+            
             {% for book in books %}
-                <li>{{ book["title"] }} by {{ book["authors"] }}</li>
+                {% set title = book["title"] %}
+                {% set authors = book.get("authors", "Unknown") %}
+                {% set isbn = book.get("isbn", "N/A") %}
+                {% set publisher = book.get("publisher", "N/A") %}
+                
+                {% set key = (title, authors, isbn, publisher) %}
+                
+                {% if key in book_counts %}
+                    {% set _ = book_counts.update({key: book_counts[key] + 1}) %}
+                {% else %}
+                    {% set _ = book_counts.update({key: 1}) %}
+                {% endif %}
             {% endfor %}
-        </ul>
+            
+            {% for (title, authors, isbn, publisher), count in book_counts.items() %}
+                <tr>
+                    <td>{{ title }}</td>
+                    <td>{{ authors }}</td>
+                    <td>{{ isbn }}</td>
+                    <td>{{ publisher }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
+
 
 {% endblock %}

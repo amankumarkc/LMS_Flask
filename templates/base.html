@@ -58,19 +58,7 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="container mt-4">
-        <h2>Import Books</h2>
-        <form>
-            <label>Title:</label> <input type="text">
-            <label>Authors:</label> <input type="text">
-            <label>ISBN:</label> <input type="text">
-            <label>Publisher:</label> <input type="text">
-            <label>Pages:</label> <input type="text">
-            <label>Number of Books:</label> <input type="number">
-            <button type="submit">Fetch Books</button>
-        </form>
-    </div>
+    {% block body %}{% endblock %}
 
     <!-- Sticky Footer -->
     <footer class="footer">
