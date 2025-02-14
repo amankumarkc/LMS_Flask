@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, request, make_response, json
 from config import db
 from models import Book, Member, Transaction
 from weasyprint import HTML
-from books_api import fetch_books
+from books_api import fetch_books, save_books_to_db
 
 app = Flask(__name__)
 
@@ -21,6 +21,10 @@ def index():
         required_books = int(request.form.get("required_books", 20))
 
         books = fetch_books(title, authors, isbn, publisher, num_pages, required_books)
-        return render_template("books_api.html", books=books)
+        if books:
+            save_books_to_db(books)  # Store books in DB
+
+        return render_template("books_api.html", books=books)   
+        
 
     return render_template("books_api.html", books=[])
