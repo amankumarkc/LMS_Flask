@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">📚 Create New Transaction</h2>
+
+    <form method="POST" action="{{ url_for('create_transaction') }}" class="row g-3 shadow p-4 rounded bg-light">
+
+        <!-- Member Selection -->
+        <div class="col-md-6">
+            <label for="member" class="form-label">Member</label>
+            <select class="form-select" id="member" name="member" required>
+                <option value="" selected disabled>Select Member</option>
+                {% for member in members %}
+                <option value="{{ member.id }}">{{ member.first_name }} {{ member.last_name }} (ID: {{ member.member_id }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Book Selection -->
+        <div class="col-md-6">
+            <label for="book" class="form-label">Book</label>
+            <select class="form-select" id="book" name="book" required>
+                <option value="" selected disabled>Select Book</option>
+                {% for book in books %}
+                <option value="{{ book.id }}">{{ book.title }} ({{ book.author }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Issue Date (Auto-filled with today's date) -->
+        <div class="col-md-6">
+            <label for="issue_date" class="form-label">Issue Date</label>
+            <input type="date" class="form-control" id="issue_date" name="issue_date" value="{{ today }}" required readonly>
+        </div>
+
+        <!-- Due Date (Auto-calculated) -->
+        <div class="col-md-6">
+            <label for="due_date" class="form-label">Due Date</label>
+            <input type="date" class="form-control" id="due_date" name="due_date" required>
+        </div>
+
+        <!-- Return Date -->
+        <div class="col-md-6">
+            <label for="return_date" class="form-label">Return Date</label>
+            <input type="date" class="form-control" id="return_date" name="return_date">
+        </div>
+
+        <!-- Rent Fee & Fine -->
+        <div class="col-md-3">
+            <label for="rent_fee" class="form-label">Rent Fee</label>
+            <input type="number" step="0.01" class="form-control" id="rent_fee" name="rent_fee" value="0" required>
+        </div>
+        <div class="col-md-3">
+            <label for="fine" class="form-label">Fine</label>
+            <input type="number" step="0.01" class="form-control" id="fine" name="fine" value="0">
+        </div>
+
+        <!-- Status -->
+        <div class="col-md-6">
+            <label for="status" class="form-label">Transaction Status</label>
+            <select class="form-select" id="status" name="status" required>
+                <option value="issued" selected>Issued</option>
+                <option value="returned">Returned</option>
+            </select>
+        </div>
+
+        <!-- Renewal Count & Limit -->
+        <div class="col-md-3">
+            <label for="renewal_count" class="form-label">Renewal Count</label>
+            <input type="number" class="form-control" id="renewal_count" name="renewal_count" value="0" readonly>
+        </div>
+        <div class="col-md-3">
+            <label for="renewal_limit" class="form-label">Renewal Limit</label>
+            <input type="number" class="form-control" id="renewal_limit" name="renewal_limit" value="2" readonly>
+        </div>
+
+        <!-- Remarks -->
+        <div class="col-md-6">
+            <label for="remarks" class="form-label">Remarks</label>
+            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+        </div>
+
+        <!-- Late Days (Auto-Calculated) -->
+        <div class="col-md-3">
+            <label for="late_days" class="form-label">Late Days</label>
+            <input type="number" class="form-control" id="late_days" name="late_days" value="0" readonly>
+        </div>
+
+        <!-- Mode of Payment -->
+        <div class="col-md-6">
+            <label for="mode_of_payment" class="form-label">Mode of Payment</label>
+            <select class="form-select" id="mode_of_payment" name="mode_of_payment">
+                <option value="" selected disabled>Select Payment Mode</option>
+                <option value="cash">Cash</option>
+                <option value="online">Online</option>
+            </select>
+        </div>
+
+        <!-- Invoice ID -->
+        <div class="col-md-6">
+            <label for="invoice_id" class="form-label">Invoice ID</label>
+            <input type="text" class="form-control" id="invoice_id" name="invoice_id">
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Create Transaction</button>
+        </div>
+    </form>
+</div>
+
+<!-- Auto-calculate Due Date -->
+<script>
+    
+    // Calculate late days when return date is selected
+    document.getElementById("return_date").addEventListener("change", function () {
+        let returnDate = new Date(this.value);
+        let dueDate = new Date(document.getElementById("due_date").value);
+
+        let lateDays = Math.max(0, Math.ceil((returnDate - dueDate) / (1000 * 60 * 60 * 24))); // Convert to days
+        document.getElementById("late_days").value = lateDays;
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let issueDateInput = document.getElementById("issue_date");
+        let dueDateInput = document.getElementById("due_date");
+
+        function calculateDueDate() {
+            if (issueDateInput.value) {
+                // Extract MM/DD/YYYY format correctly
+                let issueDateParts = issueDateInput.value.split("/");
+                let month = parseInt(issueDateParts[0]) - 1; // Months are 0-indexed in JS
+                let day = parseInt(issueDateParts[1]);
+                let year = parseInt(issueDateParts[2]);
+
+                let issueDate = new Date(year, month, day);
+
+                // Add 15 days
+                issueDate.setDate(issueDate.getDate() + 15);
+
+                // Format back to MM/DD/YYYY
+                let newMonth = (issueDate.getMonth() + 1).toString().padStart(2, '0'); // Ensure two-digit month
+                let newDay = issueDate.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+                let newYear = issueDate.getFullYear();
+
+                let formattedDueDate = `${newMonth}/${newDay}/${newYear}`;
+
+                dueDateInput.value = formattedDueDate; // Auto-fill Due Date
+            }
+        }
+
+        // Automatically calculate due date on page load
+        calculateDueDate();
+    });
+
+    
+
+</script>
+
+{% endblock %}

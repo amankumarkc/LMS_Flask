@@ -10,6 +10,18 @@ app = Flask(__name__)
 def home():
     return "home page"
 
+@app.route('/members')
+def members():
+    return render_template("members.html")
+
+@app.route('/create-member')
+def create_member():
+    return render_template("create-member.html")
+
+@app.route('/create-transaction')
+def create_transaction():
+    return render_template("create-transaction.html")
+
 @app.route("/books_api", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -28,3 +40,5 @@ def index():
         
 
     return render_template("books_api.html", books=[])
+
+

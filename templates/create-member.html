@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">➕ Add New Member</h2>
+
+    <form method="POST" action="{{ url_for('create_member') }}" class="row g-3 shadow p-4 rounded bg-light">
+
+        <!-- Name Fields -->
+        <div class="col-md-6">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name" required>
+        </div>
+        <div class="col-md-6">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" required>
+        </div>
+
+        <!-- Member ID (Auto-Generated, Readonly) -->
+        <div class="col-md-6">
+            <label for="member_id" class="form-label">Member ID</label>
+            <input type="text" class="form-control" id="member_id" name="member_id" readonly>
+        </div>
+
+        <!-- Email & Phone -->
+        <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+
+        <div class="col-md-6">
+            <label for="phone" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="phone" name="phone" required 
+                   pattern="[0-9]{10}" title="Phone number must be exactly 10 digits" maxlength="10">
+            <div class="invalid-feedback">Please enter a valid 10-digit phone number.</div>
+        </div>
+        
+
+        <!-- Address Fields -->
+        <div class="col-md-6">
+            <label for="locality" class="form-label">Locality</label>
+            <textarea class="form-control" id="locality" name="locality" rows="2" required></textarea>
+        </div>
+        <div class="col-md-4">
+            <label for="city" class="form-label">City</label>
+            <input type="text" class="form-control" id="city" name="city">
+        </div>
+        <div class="col-md-4">
+            <label for="state" class="form-label">State</label>
+            <input type="text" class="form-control" id="state" name="state">
+        </div>
+        <div class="col-md-4">
+            <label for="pincode" class="form-label">Pincode</label>
+            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" title="Pincode must be exactly 6 digits" maxlength="6">
+            <div class="invalid-feedback">Please enter a valid 6-digit pincode.</div>
+        </div>
+
+        <!-- DOB & Age -->
+        <div class="col-md-6">
+            <label for="dob" class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="dob" name="dob" required>
+        </div>
+        <div class="col-md-6">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="age" name="age" readonly>
+        </div>
+
+        <!-- Gender Selection -->
+        <div class="col-md-6">
+            <label for="gender" class="form-label">Gender</label>
+            <select class="form-select" id="gender" name="gender" required>
+                <option value="" selected disabled>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add Member</button>
+        </div>
+    </form>
+</div>
+
+<!-- Auto-calculate age based on DOB -->
+<script>
+    function calculateAgeAndMemberID() {
+        let firstName = document.getElementById("first_name").value.trim();
+        let lastName = document.getElementById("last_name").value.trim();
+        let gender = document.getElementById("gender").value;
+        let dob = document.getElementById("dob").value;
+
+        if (!dob) return;  // Don't proceed if DOB is not entered
+
+        let dobDate = new Date(dob);
+        let today = new Date();
+        
+        // 🔹 Calculate Age
+        let age = today.getFullYear() - dobDate.getFullYear();
+        let monthDiff = today.getMonth() - dobDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+            age--;
+        }
+        document.getElementById("age").value = age;
+
+        // 🔹 Generate Member ID (e.g., "AKM10" for Aman Kumar, Male, born in October)
+        if (firstName && lastName && gender && dob) {
+            let memberID = firstName[0].toUpperCase() + 
+                           lastName[0].toUpperCase() + 
+                           gender[0].toUpperCase() + 
+                           String(dobDate.getMonth() + 1).padStart(2, '0'); // Ensure 2-digit month
+            document.getElementById("member_id").value = memberID;
+        }
+    }
+
+    // Attach event listeners to relevant inputs
+    document.getElementById("dob").addEventListener("change", calculateAgeAndMemberID);
+    document.getElementById("first_name").addEventListener("input", calculateAgeAndMemberID);
+    document.getElementById("last_name").addEventListener("input", calculateAgeAndMemberID);
+    document.getElementById("gender").addEventListener("change", calculateAgeAndMemberID);
+</script>
+
+
+{% endblock %}
+
