@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block body %}
+    <script>
+        function fetch_books(event) {
+            event.preventDefault(); // Prevents page reload
+
+            let formData = new FormData(document.getElementById("bookForm"));
+            
+            fetch("/books_api", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.body.innerHTML = html; // Replace page content with new response
+            })
+            .catch(error => console.error("Error fetching books:", error));
+        }
+    </script>
+</head>
+<body>
+    <h2>Import Books</h2>
+    <form id="bookForm" method="POST" action="/books_api" onsubmit="fetchBooks(event)">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="authors">Authors:</label>
+        <input type="text" id="authors" name="authors">
+
+        <label for="isbn">ISBN:</label>
+        <input type="text" id="isbn" name="isbn">
+
+        <label for="publisher">Publisher:</label>
+        <input type="text" id="publisher" name="publisher">
+
+        <label for="pages">Pages:</label>
+        <input type="number" id="num_pages" name="num_pages">
+
+        <label for="required_books">Number of Books:</label>
+        <input type="number" id="required_books" name="required_books" min="1" required>
+
+        <button type="submit">Fetch Books</button>
+    </form>
+
+    {% if books %}
+        <h3>Fetched Books</h3>
+        <ul>
+            {% for book in books %}
+                <li>{{ book["title"] }} by {{ book["authors"] }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+{% endblock %}

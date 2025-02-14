@@ -3,7 +3,7 @@ from peewee import PostgresqlDatabase
 DATABASE = {
     'name': 'lmsdb',
     'user': 'librarian',
-    'password': '123456',
+    'password': 'root',
     'host': 'localhost',
     'port': 5432
 }
