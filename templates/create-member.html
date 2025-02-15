@@ -4,8 +4,7 @@
 <div class="container mt-4">
     <h2 class="mb-3">➕ Add New Member</h2>
 
-    <form method="POST" action="{{ url_for('create_member') }}" class="row g-3 shadow p-4 rounded bg-light">
-
+    <form id="memberForm" class="row g-3 shadow p-4 rounded bg-light">
         <!-- Name Fields -->
         <div class="col-md-6">
             <label for="first_name" class="form-label">First Name</label>
@@ -32,9 +31,7 @@
             <label for="phone" class="form-label">Phone</label>
             <input type="tel" class="form-control" id="phone" name="phone" required 
                    pattern="[0-9]{10}" title="Phone number must be exactly 10 digits" maxlength="10">
-            <div class="invalid-feedback">Please enter a valid 10-digit phone number.</div>
         </div>
-        
 
         <!-- Address Fields -->
         <div class="col-md-6">
@@ -52,7 +49,6 @@
         <div class="col-md-4">
             <label for="pincode" class="form-label">Pincode</label>
             <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" title="Pincode must be exactly 6 digits" maxlength="6">
-            <div class="invalid-feedback">Please enter a valid 6-digit pincode.</div>
         </div>
 
         <!-- DOB & Age -->
@@ -83,20 +79,39 @@
     </form>
 </div>
 
-<!-- Auto-calculate age based on DOB -->
+<!-- Bootstrap Modal for Success -->
+<div id="successModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Success!</h5>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="redirectBtn">Go to Members</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     function calculateAgeAndMemberID() {
         let firstName = document.getElementById("first_name").value.trim();
         let lastName = document.getElementById("last_name").value.trim();
         let gender = document.getElementById("gender").value;
         let dob = document.getElementById("dob").value;
+        let phone = document.getElementById("phone").value.trim();
 
-        if (!dob) return;  // Don't proceed if DOB is not entered
+        if (!dob) return;
+        if (phone.length !== 10) return;
 
         let dobDate = new Date(dob);
         let today = new Date();
-        
-        // 🔹 Calculate Age
         let age = today.getFullYear() - dobDate.getFullYear();
         let monthDiff = today.getMonth() - dobDate.getMonth();
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
@@ -104,23 +119,58 @@
         }
         document.getElementById("age").value = age;
 
-        // 🔹 Generate Member ID (e.g., "AKM10" for Aman Kumar, Male, born in October)
-        if (firstName && lastName && gender && dob) {
-            let memberID = firstName[0].toUpperCase() + 
-                           lastName[0].toUpperCase() + 
-                           gender[0].toUpperCase() + 
-                           String(dobDate.getMonth() + 1).padStart(2, '0'); // Ensure 2-digit month
+        if (firstName && lastName && gender && phone.length === 10) {
+            let memberID = firstName[0].toUpperCase() + lastName[0].toUpperCase() + gender[0].toUpperCase() + phone.slice(-2);
             document.getElementById("member_id").value = memberID;
         }
     }
 
-    // Attach event listeners to relevant inputs
     document.getElementById("dob").addEventListener("change", calculateAgeAndMemberID);
     document.getElementById("first_name").addEventListener("input", calculateAgeAndMemberID);
     document.getElementById("last_name").addEventListener("input", calculateAgeAndMemberID);
     document.getElementById("gender").addEventListener("change", calculateAgeAndMemberID);
+    document.getElementById("phone").addEventListener("input", calculateAgeAndMemberID);
+
+    document.getElementById("memberForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        let formData = new FormData(this);
+
+        fetch("/create-member", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message.includes("successfully created")) {
+                Swal.fire({
+                    title: "Success!",
+                    text: data.message,
+                    icon: "success",
+                    showCancelButton: true,
+                    confirmButtonText: "Go to Members",
+                    cancelButtonText: "Add Another",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "/members";  // Redirect to members list
+                    } else {
+                        // Reset specific fields while keeping some values
+                        document.getElementById("member_id").value = "";
+                        document.getElementById("age").value = "";
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: "Error!",
+                    text: data.message,
+                    icon: "error",
+                    confirmButtonText: "Try Again"
+                });
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
 </script>
 
-
 {% endblock %}
-

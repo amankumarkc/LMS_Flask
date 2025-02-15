@@ -47,15 +47,15 @@ class Member(BaseModel):
     card_status = CharField(choices=[('Active', 'Active'), ('Inactive', 'Inactive'), ('Suspended', 'Suspended')])
     card_expiry = DateField(null=True)  # Auto-generated based on joining date
 
-    def save(self, *args, **kwargs):
-        # Auto-calculate age
-        today = date.today()
-        self.age = today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+    # def save(self, *args, **kwargs):
+    #     # Auto-calculate age
+    #     today = date.today()
+    #     self.age = today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
 
-        # Generate member_id with first_name, last_name, dob and gender (e.g., "AMM10" for Aman (Male) born in October)
-        self.member_id = f"{self.first_name[0].upper()}{self.last_name[0].upper()}{self.gender[0].upper()}{str(self.dob.month).zfill(2)}"\
+    #     # Generate member_id with first_name, last_name, dob and gender (e.g., "AMM10" for Aman (Male) born in October)
+    #     self.member_id = f"{self.first_name[0].upper()}{self.last_name[0].upper()}{self.gender[0].upper()}{str(self.dob.month).zfill(2)}"\
         
-        super().save(*args, **kwargs)
+    #     super().save(*args, **kwargs)
 
 
 class Transaction(BaseModel):
