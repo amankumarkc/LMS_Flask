@@ -21,16 +21,19 @@
             <input type="text" class="form-control" id="member_id" name="member_id" readonly>
         </div>
 
-        <!-- Email & Phone -->
+        <!-- Email -->
         <div class="col-md-6">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" name="email" required>
         </div>
 
+        <!-- Phone Number -->
         <div class="col-md-6">
             <label for="phone" class="form-label">Phone</label>
-            <input type="tel" class="form-control" id="phone" name="phone" required 
-                   pattern="[0-9]{10}" title="Phone number must be exactly 10 digits" maxlength="10">
+            <input type="text" class="form-control" id="phone" name="phone"
+                value="{{ phone }}" required pattern="[0-9]{10}"
+                title="Phone number must be exactly 10 digits" maxlength="10"
+                inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
         </div>
 
         <!-- Address Fields -->
@@ -46,9 +49,13 @@
             <label for="state" class="form-label">State</label>
             <input type="text" class="form-control" id="state" name="state">
         </div>
+        <!-- Pincode -->
         <div class="col-md-4">
             <label for="pincode" class="form-label">Pincode</label>
-            <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" title="Pincode must be exactly 6 digits" maxlength="6">
+            <input type="text" class="form-control" id="pincode" name="pincode"
+                value="{{ pincode }}" pattern="[0-9]{6}"
+                title="Pincode must be exactly 6 digits" maxlength="6"
+                inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
         </div>
 
         <!-- DOB & Age -->

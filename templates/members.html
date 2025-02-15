@@ -11,17 +11,17 @@
         <div class="d-flex">
             <select id="filterCity" class="form-select mx-2">
                 <option value="">All Cities</option>
-                {% for member in members | groupby('city') %}
-                <option value="{{ member.grouper }}">{{ member.grouper }}</option>
+                {% for city in members | map(attribute='city') | unique | list %}
+                <option value="{{ city }}">{{ city }}</option>
                 {% endfor %}
             </select>
 
             <select id="filterState" class="form-select mx-2">
                 <option value="">All States</option>
-                {% for member in members | groupby('state') %}
-                <option value="{{ member.grouper }}">{{ member.grouper }}</option>
+                {% for state in members | map(attribute='state') | unique | list %}
+                <option value="{{ state }}">{{ state }}</option>
                 {% endfor %}
-            </select>
+            </select>            
         </div>
     </div>
 
@@ -53,13 +53,14 @@
                     <td>{{ member.member_id }}</td>
                     <td>{{ member.first_name }}</td>
                     <td>{{ member.last_name }}</td>
-                    <td>{{ member.email }}</td>
-                    <td>{{ member.phone }}</td>
+                    <td>{{ member.email[:4] }}***{{ member.email[-12:] }}</td>
+                    <td>{{ member.phone[:2] }}******{{ member.phone[-2:] }}</td>
+                    
                     <td>
                         <a href="/transaction/{{ member.id }}" class="btn btn-primary btn-sm">
                             <i class="bi bi-file-earmark-text"></i> Transaction
                         </a>
-                        <a href="#" class="btn btn-info btn-sm">
+                        <a href="/view-card/{{ member.id }}" class="btn btn-info btn-sm">
                             <i class="bi bi-person-vcard"></i> View Card
                         </a>
                         <a href="mailto:{{ member.email }}" class="btn btn-success btn-sm">
@@ -84,6 +85,27 @@
 <!-- SweetAlert for Confirm Delete -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+    // Filter Members
+    document.getElementById("filterCity").addEventListener("change", filterMembers);
+    document.getElementById("filterState").addEventListener("change", filterMembers);
+
+    function filterMembers() {
+        let selectedCity = document.getElementById("filterCity").value;
+        let selectedState = document.getElementById("filterState").value;
+
+        document.querySelectorAll(".member-row").forEach(row => {
+            let rowCity = row.getAttribute("data-city");
+            let rowState = row.getAttribute("data-state");
+
+            let cityMatch = !selectedCity || rowCity === selectedCity;
+            let stateMatch = !selectedState || rowState === selectedState;
+
+            row.style.display = cityMatch && stateMatch ? "" : "none";
+        });
+    }
+
+
     // Sorting Members
     let sortOrder = { firstName: 1, lastName: 1 };
 

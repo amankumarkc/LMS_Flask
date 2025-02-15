@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">✏️ Edit Member</h2>
+
+    <form id="editMemberForm" class="row g-3 shadow p-4 rounded bg-light" method="POST">
+        <!-- Name Fields -->
+        <div class="col-md-6">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ member.first_name }}" required>
+        </div>
+        <div class="col-md-6">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ member.last_name }}" required>
+        </div>
+
+        <!-- Member ID (Auto-Generated, Readonly) -->
+        <div class="col-md-6">
+            <label for="member_id" class="form-label">Member ID</label>
+            <input type="text" class="form-control" id="member_id" name="member_id" value="{{ member.member_id }}" readonly>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ member.email }}" required>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="col-md-6">
+            <label for="phone" class="form-label">Phone</label>
+            <input type="text" class="form-control" id="phone" name="phone"
+                value="{{ member.phone }}" required pattern="[0-9]{10}"
+                title="Phone number must be exactly 10 digits" maxlength="10"
+                inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        </div>
+
+        <!-- Address Fields -->
+        <div class="col-md-6">
+            <label for="locality" class="form-label">Locality</label>
+            <textarea class="form-control" id="locality" name="locality" rows="2" required>{{ member.locality }}</textarea>
+        </div>
+        <div class="col-md-4">
+            <label for="city" class="form-label">City</label>
+            <input type="text" class="form-control" id="city" name="city" value="{{ member.city }}">
+        </div>
+        <div class="col-md-4">
+            <label for="state" class="form-label">State</label>
+            <input type="text" class="form-control" id="state" name="state" value="{{ member.state }}">
+        </div>
+        <!-- Pincode -->
+        <div class="col-md-4">
+            <label for="pincode" class="form-label">Pincode</label>
+            <input type="text" class="form-control" id="pincode" name="pincode"
+                value="{{ member.pincode }}" pattern="[0-9]{6}"
+                title="Pincode must be exactly 6 digits" maxlength="6"
+                inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        </div>
+
+        <!-- DOB & Age -->
+        <div class="col-md-6">
+            <label for="dob" class="form-label">Date of Birth</label>
+            <input type="date" class="form-control" id="dob" name="dob" value="{{ member.dob }}" readonly>
+        </div>
+        <div class="col-md-6">
+            <label for="age" class="form-label">Age</label>
+            <input type="number" class="form-control" id="age" name="age" value="{{ member.age }}" readonly>
+        </div>
+
+        <!-- Gender Selection (Readonly) -->
+        <div class="col-md-6">
+            <label for="gender" class="form-label">Gender</label>
+            <input type="text" class="form-control" id="gender" name="gender" value="{{ member.gender }}" readonly>
+        </div>
+
+        <!-- Outstanding Debt -->
+        <div class="col-md-6">
+            <label for="outstanding_debt" class="form-label">Outstanding Debt</label>
+            <input type="number" class="form-control" id="outstanding_debt" name="outstanding_debt"
+                value="{{ member.outstanding_debt }}" step="0.01" min="0" max="500" required
+                title="Outstanding debt should be between 0 and 500">
+        </div>
+
+        <!-- Card Status & Expiry Date -->
+        <div class="col-md-6">
+            <label for="card_status" class="form-label">Card Status</label>
+            <select class="form-select" id="card_status" name="card_status">
+                <option value="Active" {% if member.card_status == 'Active' %}selected{% endif %}>Active</option>
+                <option value="Inactive" {% if member.card_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                <option value="Suspended" {% if member.card_status == 'Suspended' %}selected{% endif %}>Suspended</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="card_expiry" class="form-label">Card Expiry Date</label>
+            <input type="date" class="form-control" id="card_expiry" name="card_expiry" value="{{ member.card_expiry }}" readonly>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updateMemberID() {
+        let firstName = document.getElementById("first_name").value.trim();
+        let lastName = document.getElementById("last_name").value.trim();
+        let phone = document.getElementById("phone").value.trim();
+        let gender = document.getElementById("gender").value;
+
+        if (firstName && lastName && gender && phone.length === 10) {
+            let memberID = firstName[0].toUpperCase() + lastName[0].toUpperCase() + gender[0].toUpperCase() + phone.slice(-2);
+            document.getElementById("member_id").value = memberID;
+        }
+    }
+
+    document.getElementById("first_name").addEventListener("input", updateMemberID);
+    document.getElementById("last_name").addEventListener("input", updateMemberID);
+    document.getElementById("phone").addEventListener("input", updateMemberID);
+    document.getElementById("outstanding_debt").addEventListener("input", function () {
+        if (this.value > 500) {
+            this.value = 500;
+        }
+    });
+
+    document.getElementById("editMemberForm").addEventListener("submit", function(event) {
+        let outstandingDebt = parseFloat(document.getElementById("outstanding_debt").value);
+        if (outstandingDebt > 500) {
+            alert("Outstanding debt cannot be greater than 500!");
+            event.preventDefault();
+        }
+    });
+</script>
+
+{% endblock %}
