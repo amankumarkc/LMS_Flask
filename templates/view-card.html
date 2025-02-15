@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="display-4 fw-bold text-gradient">✨ SelfDESK Premium Library</h2>
+        <p class="lead cursive-text">Exclusive Member Card</p>
+    </div>
+
+    <div class="card-container">
+        <div class="card-flip" id="card">
+            <!-- Front Side -->
+            <div class="card-front">
+                <div class="premium-card">
+                    <div class="shimmer-effect"></div>
+                    <div class="card-content">
+                        <!-- Top Row with Member ID and Name -->
+                        <div class="top-details">
+                            <div class="member-id">{{ member.member_id }}</div>
+                            <div class="member-name">{{ member.first_name }} {{ member.last_name }}</div>
+                        </div>
+                        
+                        <!-- Library Title and Badge -->
+                        <div class="text-center mt-4">
+                            <h3 class="card-title">SelfDESK Library</h3>
+                            <div class="premium-badge">✦ Premium Member ✦</div>
+                        </div>
+
+                        <!-- Details Section -->
+                        <div class="card-details">
+                            <div class="detail-row">
+                                <span class="label">DOB</span>
+                                <span class="value">{{ member.dob.strftime('%d-%m-%Y') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Phone</span>
+                                <span class="value">{{ member.phone }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Valid Till</span>
+                                <span class="value">{{ member.card_expiry.strftime('%d-%m-%Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Side -->
+            <div class="card-back">
+                <div class="premium-card">
+                    <div class="card-content text-center">
+                        <div class="back-details">
+                            <div class="address-section">
+                                <p class="address">
+                                    📍 {{ member.locality }}, {{ member.city }}, 
+                                    <br>{{ member.state }} - {{ member.pincode }}
+                                </p>
+                            </div>
+                            <div class="return-info">
+                                <p class="return-text">If found, please return to:</p>
+                                <h5 class="library-name-back">✨ SelfDESK Library ✨</h5>
+                                <p class="contact-info">📱 +91 9876543210</p>
+                                <p class="location-info">🏛️ Sector 17, Chandigarh</p>
+                            </div>
+                            <div class="card-footer">
+                                <p class="copyright">© SelfDESK Library • All Rights Reserved</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button class="btn btn-outline-secondary me-3" onclick="history.back()">
+            ⬅️ Go Back
+        </button>
+        <a href="{{ url_for('download_pdf', member_id=member.id) }}" class="btn btn-primary">
+            🖨️ Print Card
+        </a>
+    </div>
+</div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Caudex:wght@400;700&display=swap');
+
+    :root {
+        --card-gradient-1: #2c3e50;
+        --card-gradient-2: #3498db;
+        --gold-color: #ffd700;
+        --silver-color: #e0e0e0;
+    }
+
+    body {
+        font-family: 'Caudex', serif;
+        background: #f8f9fa;
+    }
+
+    .cursive-text {
+        font-family: 'Caudex', serif;
+        font-size: 1.2em;
+        margin-bottom: 0.5rem;
+    }
+
+    .text-gradient {
+        background: linear-gradient(45deg, var(--gold-color), var(--card-gradient-2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-container {
+        perspective: 2000px;
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+    }
+
+    .card-flip {
+        width: 500px;
+        height: 300px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+    }
+
+    .card-flip:hover {
+        transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        backface-visibility: hidden;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .card-back {
+        transform: rotateY(180deg);
+    }
+
+    .premium-card {
+        background: linear-gradient(135deg, var(--card-gradient-1), var(--card-gradient-2));
+        height: 100%;
+        position: relative;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        padding: 1.5rem;
+    }
+
+    /* New styles for top details */
+    .top-details {
+        display: flex;
+        justify-content: space-between;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .member-id {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .member-name {
+        font-size: 1.2em;
+        font-weight: bold;
+        text-align: right;
+    }
+
+    .card-title {
+        color: var(--gold-color);
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin: 10px 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .premium-badge {
+        background: linear-gradient(45deg, var(--gold-color), var(--silver-color));
+        color: var(--card-gradient-1);
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.9em;
+        font-weight: 600;
+        display: inline-block;
+        margin: 5px 0 15px 0;
+    }
+
+    .card-details {
+        padding: 0 15px;
+        margin-top: 20px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+        color: white;
+        font-size: 1em;
+    }
+
+    .label {
+        color: var(--silver-color);
+        font-weight: 600;
+    }
+
+    .value {
+        color: white;
+    }
+
+    .back-details {
+        padding: 10px;
+        color: white;
+    }
+
+    .address-section {
+        margin: 10px 0;
+    }
+
+    .address {
+        font-size: 1em;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .return-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 12px;
+        margin: 10px 0;
+    }
+
+    .return-text {
+        font-size: 1em;
+        color: var(--silver-color);
+        margin-bottom: 8px;
+    }
+
+    .library-name-back {
+        font-size: 1.5em;
+        color: var(--gold-color);
+        margin: 8px 0;
+    }
+
+    .contact-info, .location-info {
+        font-size: 1em;
+        margin: 5px 0;
+    }
+
+    .copyright {
+        font-size: 0.8em;
+        color: var(--silver-color);
+        margin-top: 10px;
+    }
+
+    .btn {
+        padding: 8px 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Fix for logo */
+    .library-logo {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+</style>
+
+<script>
+    document.getElementById("card").addEventListener("click", function() {
+        this.classList.toggle("flipped");
+    });
+</script>
+{% endblock %}

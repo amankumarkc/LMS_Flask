@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, make_response, jsonify
+from flask import Flask, render_template, redirect, request, make_response, jsonify, Response
 from config import db
 from models import Book, Member, Transaction
 from peewee import IntegrityError
@@ -152,6 +152,11 @@ def edit_member(member_id):
         member.pincode = request.form.get("pincode", member.pincode)
         member.dob = request.form.get("dob", member.dob)
         member.gender = request.form.get("gender", member.gender)
+
+        # Regenerate Member ID if Name, Gender, or Phone changes
+        new_member_id = (member.first_name[0] + member.last_name[0] + member.gender[0] + member.phone[-2:]).upper()
+        if member.member_id != new_member_id:
+            member.member_id = new_member_id  # Update in database
         member.save()
 
         return redirect('/members')  # Redirect to members list
@@ -191,6 +196,29 @@ def bulk_delete_members():
         return jsonify({"message": "No valid members found to delete!"}), 404
 
     return jsonify({"message": f"Deleted members: {', '.join(deleted_members)}"}), 200
+
+# View Member Card
+@app.route("/view-card/<int:member_id>")
+def view_card(member_id):
+    member = Member.get_or_none(Member.id == member_id)
+    if not member:
+        return "Member Not Found", 404
+    return render_template("view-card.html", member=member)
+
+# Library Card PDF View in Browser
+@app.route("/download/<int:member_id>")
+def download_pdf(member_id):
+    member = Member.get_or_none(Member.id == member_id)
+    if not member:
+        return "Member Not Found", 404
+
+    html = HTML(string=render_template("print/library-card.html", member=member))
+    pdf_content = html.write_pdf()
+
+    response = Response(pdf_content, content_type="application/pdf")
+    response.headers["Content-Disposition"] = f"inline; filename=Library_Card_{member.member_id}.pdf"  # ✅ Open in browser
+
+    return response
 
 @app.route('/create-transaction')
 def create_transaction():
