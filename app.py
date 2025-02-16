@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "home page"
+    return render_template("home.html")
 
 # View Books Page
 @app.route('/books')

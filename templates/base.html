@@ -54,7 +54,7 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="/" id="home-link">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="/books" id="browse-link">Browse Books</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/account" id="account-link">My Account</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/members" id="account-link">Members List</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact" id="contact-link">Contact</a></li>
                 </ul>
                 <form class="d-flex ms-3">
@@ -68,9 +68,14 @@
                         <i class="bi bi-person-circle"></i> Profile
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/login">Login</a></li>
-                        <li><a class="dropdown-item" href="/register">Register</a></li>
+                        {% if session['user'] %}
+                            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                        {% else %}
+                            <li><a class="dropdown-item" href="/login">Login with Google</a></li>
+                        {% endif %}
                     </ul>
+                    
                 </div>
 
                 <!-- Dark Mode Toggle -->
