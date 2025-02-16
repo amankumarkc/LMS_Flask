@@ -176,21 +176,37 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span>Books Issued Today</span>
-                        <span class="badge bg-primary rounded-pill">24</span>
+                        <span id="booksIssued" class="badge bg-primary rounded-pill"></span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span>Books Returned Today</span>
-                        <span class="badge bg-success rounded-pill">18</span>
+                        <span id="booksReturned" class="badge bg-success rounded-pill"></span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span>New Members Today</span>
-                        <span class="badge bg-info rounded-pill">5</span>
+                        <span id="newMembers" class="badge bg-info rounded-pill"></span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <span>Pending Returns</span>
-                        <span class="badge bg-warning rounded-pill">12</span>
+                        <span id="pendingReturns" class="badge bg-warning rounded-pill"></span>
                     </div>
                 </div>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        function getRandomNumber(min, max) {
+                            return Math.floor(Math.random() * (max - min + 1)) + min;
+                        }
+                
+                        function updateNumbers() {
+                            document.getElementById('booksIssued').innerText = getRandomNumber(5, 40);
+                            document.getElementById('booksReturned').innerText = getRandomNumber(5, 40);
+                            document.getElementById('newMembers').innerText = getRandomNumber(5, 40);
+                            document.getElementById('pendingReturns').innerText = getRandomNumber(5, 40);
+                        }
+                
+                        updateNumbers(); // Call the function on page load
+                    });
+                </script>
             </div>
         </div>
     </div>

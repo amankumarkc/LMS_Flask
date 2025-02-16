@@ -1,86 +1,233 @@
 {% extends "base.html" %}
 {% block body %}
-    <script>
-        function fetchBooks(event) {
-            event.preventDefault(); // Prevents page reload
+<div class="container py-5">
+    <!-- Page Header with Hero Section -->
+    <div class="card bg-success text-white mb-5 border-0 overflow-hidden">
+        <div class="card-body position-relative py-4">
+            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(45deg, #198754, #157347); opacity: 0.9;"></div>
+            <div class="position-relative text-center">
+                <h1 class="fw-bold mb-2">Import Books</h1>
+                <p class="mb-0">Add new books to your library collection</p>
+            </div>
+        </div>
+    </div>
 
-            let formData = new FormData(document.getElementById("bookForm"));
-            
-            fetch("/books_api", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.text())
-            .then(html => {
-                document.body.innerHTML = html; // Replace page content with new response
-            })
-            .catch(error => console.error("Error fetching books:", error));
-        }
-    </script>
-</head>
-<body>
-    <h2>Import Books</h2>
-    <form id="bookForm" method="POST" action="/books_api" onsubmit="fetchBooks(event)">
-        <label for="title">Title:</label>
-        <input type="text" id="title" name="title" required>
+    <!-- Compact Import Form Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm hover-card">
+                <div class="card-body p-4">
+                    <form id="bookForm" method="POST" action="/books_api" onsubmit="fetchBooks(event)" class="needs-validation" novalidate>
+                        <div class="row g-3">
+                            <!-- Title and Author in one row -->
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="bi bi-book me-2"></i>Book Title
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="bi bi-person me-2"></i>Authors
+                                </label>
+                                <input type="text" class="form-control" id="authors" name="authors">
+                            </div>
+                            <!-- ISBN and Publisher in one row -->
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-upc-scan me-2"></i>ISBN
+                                </label>
+                                <input type="text" class="form-control" id="isbn" name="isbn">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-building me-2"></i>Publisher
+                                </label>
+                                <input type="text" class="form-control" id="publisher" name="publisher">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">
+                                    <i class="bi bi-123 me-2"></i>Number of Books
+                                </label>
+                                <input type="number" class="form-control" id="required_books" name="required_books" min="1" required>
+                            </div>
+                            <!-- Submit Button -->
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-cloud-download me-2"></i>Fetch Books
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <label for="authors">Authors:</label>
-        <input type="text" id="authors" name="authors">
-
-        <label for="isbn">ISBN:</label>
-        <input type="text" id="isbn" name="isbn">
-
-        <label for="publisher">Publisher:</label>
-        <input type="text" id="publisher" name="publisher">
-
-        <label for="required_books">Number of Books:</label>
-        <input type="number" id="required_books" name="required_books" min="1" required>
-
-        <button type="submit">Fetch Books</button>
-    </form>
-
+    <!-- Results Table Section -->
     {% if books %}
-    <h3>Fetched Books</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Book Name</th>
-                <th>Authors</th>
-                <th>ISBN</th>
-                <th>Publisher</th>
-                <th>Number of Times Fetched</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% set book_counts = {} %}
-            
-            {% for book in books %}
-                {% set title = book["title"] %}
-                {% set authors = book.get("authors", "Unknown") %}
-                {% set isbn = book.get("isbn", "N/A") %}
-                {% set publisher = book.get("publisher", "N/A") %}
-                
-                {% set key = (title, authors, isbn, publisher) %}
-                
-                {% if key in book_counts %}
-                    {% set _ = book_counts.update({key: book_counts[key] + 1}) %}
-                {% else %}
-                    {% set _ = book_counts.update({key: 1}) %}
-                {% endif %}
-            {% endfor %}
-            
-            {% for (title, authors, isbn, publisher), count in book_counts.items() %}
-                <tr>
-                    <td>{{ title }}</td>
-                    <td>{{ authors }}</td>
-                    <td>{{ isbn }}</td>
-                    <td>{{ publisher }}</td>
-                    <td>{{ count }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="card border-0 shadow-sm hover-card">
+        <div class="card-header bg-white border-0 py-3">
+            <h3 class="card-title mb-0 text-success">
+                <i class="bi bi-journal-bookmark me-2"></i>Fetched Books
+            </h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="px-4">Book Name</th>
+                            <th>Authors</th>
+                            <th>ISBN</th>
+                            <th>Publisher</th>
+                            <th class="text-center">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set book_counts = {} %}
+                        
+                        {% for book in books %}
+                            {% set title = book["title"] %}
+                            {% set authors = book.get("authors", "Unknown") %}
+                            {% set isbn = book.get("isbn", "N/A") %}
+                            {% set publisher = book.get("publisher", "N/A") %}
+                            
+                            {% set key = (title, authors, isbn, publisher) %}
+                            
+                            {% if key in book_counts %}
+                                {% set _ = book_counts.update({key: book_counts[key] + 1}) %}
+                            {% else %}
+                                {% set _ = book_counts.update({key: 1}) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% for (title, authors, isbn, publisher), count in book_counts.items() %}
+                            <tr>
+                                <td class="px-4">{{ title }}</td>
+                                <td>{{ authors }}</td>
+                                <td>{{ isbn }}</td>
+                                <td>{{ publisher }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success rounded-pill px-3">{{ count }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     {% endif %}
 
+    
+    
+    <!-- Navigation Buttons -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-10">
+            <div class="d-flex gap-3">
+                <a href="/books" class="btn btn-primary flex-grow-1 py-3">
+                    <i class="bi bi-book-half me-2"></i>View All Books
+                </a>
+                <a href="/create-transaction" class="btn btn-success flex-grow-1 py-3">
+                    <i class="bi bi-arrow-left-right me-2"></i>Create Transaction
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        color: #666;
+    }
+    
+    .table > :not(caption) > * > * {
+        padding: 0.75rem;
+    }
+    
+    .badge {
+        font-weight: 500;
+    }
+
+    .btn-success {
+        padding: 0.8rem;
+    }
+</style>
+
+<script>
+function fetchBooks(event) {
+    event.preventDefault();
+    
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    const originalContent = submitButton.innerHTML;
+    
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+    submitButton.disabled = true;
+
+    let formData = new FormData(document.getElementById("bookForm"));
+    
+    fetch("/books_api", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.body.innerHTML = html;
+    })
+    .catch(error => {
+        console.error("Error fetching books:", error);
+        const toastDiv = document.createElement('div');
+        toastDiv.className = 'position-fixed bottom-0 end-0 p-3';
+        toastDiv.style.zIndex = '11';
+        toastDiv.innerHTML = `
+            <div class="toast align-items-center text-white bg-danger border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        Error fetching books. Please try again.
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toastDiv);
+        const toast = new bootstrap.Toast(toastDiv.querySelector('.toast'));
+        toast.show();
+    })
+    .finally(() => {
+        submitButton.innerHTML = originalContent;
+        submitButton.disabled = false;
+    });
+}
+
+// Bootstrap form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
 {% endblock %}
