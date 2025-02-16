@@ -5,6 +5,8 @@ from peewee import IntegrityError, DoesNotExist
 from weasyprint import HTML
 from datetime import datetime, timedelta, date
 from books_api import fetch_books, save_books_to_db
+import csv
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -37,6 +39,32 @@ def index():
         
 
     return render_template("books_api.html", books=[])
+
+#  Download Books CSV
+@app.route('/download-books-csv', methods=['GET'])
+def download_books_csv():
+    books = Book.select()  # Fetch all books from the database
+
+    # Create an in-memory file object
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Write CSV header
+    writer.writerow(["Book ID", "Title", "Author", "Language", "Publisher", "Stock"])
+
+    # Write book data
+    for book in books:
+        writer.writerow([book.id, book.title, book.author, book.language, book.publisher, book.stock])
+
+    # Move the cursor to the beginning of the file
+    output.seek(0)
+
+    # Create response with CSV content
+    response = Response(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=library_books.csv"
+    
+    return response
+
 
 # Edit Book Page
 @app.route('/edit-books/<int:book_id>', methods=['GET', 'POST'])
@@ -153,6 +181,36 @@ def create_member():
             return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
     return render_template("create-member.html")
+
+# Download Members CSV
+@app.route('/download-members-csv', methods=['GET'])
+def download_members_csv():
+    members = Member.select()  # Fetch all members from the database
+
+    # Create an in-memory file object
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Write CSV header
+    writer.writerow(["Member ID", "First Name", "Last Name", "Gender", "DOB", "Email", "Phone", "Address"])
+
+    # Write member data
+    for member in members:
+        writer.writerow([
+            member.member_id, member.first_name, member.last_name, 
+            member.gender, member.dob, member.email, 
+            member.phone, f"{member.locality}, {member.city}, {member.state}, {member.pincode}"
+        ])
+
+    # Move the cursor to the beginning of the file
+    output.seek(0)
+
+    # Create response with CSV content
+    response = Response(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=library_members.csv"
+    
+    return response
+
 
 # Edit Member Page
 @app.route('/edit-member/<int:member_id>', methods=['GET', 'POST'])
