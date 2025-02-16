@@ -57,7 +57,7 @@
                     <td>{{ member.phone[:2] }}******{{ member.phone[-2:] }}</td>
                     
                     <td>
-                        <a href="/create-transaction/{{ member.id }}" class="btn btn-primary btn-sm">
+                        <a href="{{ url_for('create_transaction') }}" class="btn btn-primary btn-sm">
                             <i class="bi bi-file-earmark-text"></i> Transaction
                         </a>                        
                         </a>

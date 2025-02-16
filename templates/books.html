@@ -55,7 +55,7 @@
                     <td>{{ book.author }}</td>
                     <td class="stock-cell" data-stock="{{ book.stock }}">{{ book.stock }}</td>
                     <td>
-                        <a href="/transaction/{{ book.id }}" class="btn btn-primary btn-sm">
+                        <a href="/create-transaction" class="btn btn-primary btn-sm">
                             <i class="bi bi-file-earmark-text"></i> Issue/Return
                         </a>
                         <a href="/edit-books/{{ book.id }}" class="btn btn-warning btn-sm">
