@@ -22,6 +22,7 @@
                 <option value="" selected disabled>Select Member</option>
             </select>
         </div>
+        
 
         <!-- Book Selection -->
         <div class="col-md-6">
@@ -95,143 +96,160 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('transactionForm');
-        const statusSelect = document.getElementById('status');
-        const memberSelect = document.getElementById('member');
-        const bookSelect = document.getElementById('book');
-        const returnOnlyFields = document.querySelectorAll('.return-only');
-        const submitBtn = document.getElementById('submitBtn');
-        
-        // Parse data from backend
-        const availableMembers = JSON.parse('{{ members|tojson|safe }}');
-        const availableBooks = JSON.parse('{{ books|tojson|safe }}');
-        const issuedTransactions = JSON.parse('{{ transactions|tojson|safe }}');
-        
-        statusSelect.addEventListener('change', function() {
-            memberSelect.disabled = false;
-            memberSelect.innerHTML = '<option value="" selected disabled>Select Member</option>';
-            bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
-            
-            if (this.value === 'issued') {
-                // Populate all members
-                availableMembers.forEach(member => {
-                    memberSelect.add(new Option(
-                        `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
-                        member.id
-                    ));
-                });
+    document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('transactionForm');
+    const statusSelect = document.getElementById('status');
+    const memberSelect = document.getElementById('member');
+    const bookSelect = document.getElementById('book');
+    const returnOnlyFields = document.querySelectorAll('.return-only');
+    const submitBtn = document.getElementById('submitBtn');
+    const lateDaysInput = document.getElementById('late_days');
+    const fineInput = document.getElementById('fine');
+    const totalPayableInput = document.getElementById('total_payable');
+    const invoiceIdInput = document.getElementById('invoice_id');
+    const modeOfPaymentInput = document.getElementById('mode_of_payment');
+    const returnDateInput = document.getElementById('return_date');
 
-                // Hide return-only fields
-                returnOnlyFields.forEach(field => field.style.display = 'none');
+    // Parse data from backend
+    const availableMembers = JSON.parse('{{ members|tojson|safe }}');
+    const availableBooks = JSON.parse('{{ books|tojson|safe }}');
+    const issuedTransactions = JSON.parse('{{ transactions|tojson|safe }}');
 
-                // Set default dates
-                const today = new Date();
-                const dueDate = new Date();
-                dueDate.setDate(today.getDate() + 14);
-                
-                document.getElementById('issue_date').value = today.toISOString().split('T')[0];
-                document.getElementById('due_date').value = dueDate.toISOString().split('T')[0];
-            } else if (this.value === 'returned') {
-                // Show only members who have issued books
-                const membersWithBooks = [...new Set(issuedTransactions.map(t => t.member_id))];
-                availableMembers.filter(m => membersWithBooks.includes(m.id)).forEach(member => {
-                    memberSelect.add(new Option(
-                        `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
-                        member.id
-                    ));
-                });
+    statusSelect.addEventListener('change', function () {
+        memberSelect.disabled = false;
+        memberSelect.innerHTML = '<option value="" selected disabled>Select Member</option>';
+        bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
 
-                // Show return-only fields
-                returnOnlyFields.forEach(field => field.style.display = 'block');
-            }
-        });
+        if (this.value === 'issued') {
+            availableMembers.forEach(member => {
+                memberSelect.add(new Option(
+                    `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
+                    member.id
+                ));
+            });
 
-        memberSelect.addEventListener('change', function() {
-            bookSelect.disabled = false;
-            bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
+            returnOnlyFields.forEach(field => field.style.display = 'none');
 
-            // Fetch member's outstanding debt
-            const selectedMember = availableMembers.find(m => m.id === parseInt(this.value));
-            if (selectedMember) {
-                document.getElementById('outstanding_debt').value = selectedMember.outstanding_debt;
-            }
+            const today = new Date();
+            const dueDate = new Date();
+            dueDate.setDate(today.getDate() + 14);
 
-            if (statusSelect.value === 'issued') {
-                // Show only books with stock > 0
-                availableBooks.filter(book => book.stock > 0).forEach(book => {
-                    bookSelect.add(new Option(
-                        `${book.title} (Stock: ${book.stock})`,
-                        book.id
-                    ));
-                });
-            } else if (statusSelect.value === 'returned') {
-                // Show only books issued to the selected member
-                const memberTransactions = issuedTransactions.filter(t => t.member_id === parseInt(this.value));
-                memberTransactions.forEach(transaction => {
-                    const book = availableBooks.find(b => b.id === transaction.book_id);
-                    if (book) {
-                        bookSelect.add(new Option(
-                            `${book.title} (Issued: ${transaction.issue_date})`,
-                            book.id
-                        ));
-                    }
-                });
-            }
-        });
+            document.getElementById('issue_date').value = today.toISOString().split('T')[0];
+            document.getElementById('due_date').value = dueDate.toISOString().split('T')[0];
+        } else if (this.value === 'returned') {
+            const membersWithBooks = [...new Set(issuedTransactions.map(t => t.member_id))];
+            availableMembers.filter(m => membersWithBooks.includes(m.id)).forEach(member => {
+                memberSelect.add(new Option(
+                    `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
+                    member.id
+                ));
+            });
 
-        bookSelect.addEventListener('change', function() {
-            if (statusSelect.value === 'returned') {
-                const transaction = issuedTransactions.find(t => 
-                    t.member_id === parseInt(memberSelect.value) && 
-                    t.book_id === parseInt(this.value)
-                );
-
-                if (transaction) {
-                    document.getElementById('issue_date').value = transaction.issue_date;
-                    document.getElementById('due_date').value = transaction.due_date;
-
-                    // Calculate late days and fine
-                    const returnDate = new Date(document.getElementById('return_date').value);
-                    const dueDate = new Date(transaction.due_date);
-                    const lateDays = Math.max(0, Math.floor((returnDate - dueDate) / (1000 * 60 * 60 * 24)));
-                    const lateFine = lateDays * 5;
-
-                    document.getElementById('late_days').value = lateDays;
-                    document.getElementById('fine').value = lateFine;
-                    document.getElementById('total_payable').value = 
-                        parseFloat(document.getElementById('outstanding_debt').value) + lateFine;
-                }
-            }
-
-            // Enable submit button
-            submitBtn.disabled = false;
-        });
-
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(form);
-            try {
-                const response = await fetch("{{ url_for('create_transaction') }}", {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert(result.message);
-                    window.location.reload();
-                } else {
-                    alert(result.message);
-                }
-            } catch (error) {
-                alert('An error occurred while processing the transaction');
-            }
-        });
+            returnOnlyFields.forEach(field => field.style.display = 'block');
+        }
     });
 
-    </script>
+    memberSelect.addEventListener('change', function () {
+        bookSelect.disabled = false;
+        bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
+
+        const selectedMember = availableMembers.find(m => m.id === parseInt(this.value));
+        if (selectedMember) {
+            document.getElementById('outstanding_debt').value = selectedMember.outstanding_debt;
+        }
+
+        if (statusSelect.value === 'issued') {
+            availableBooks.filter(book => book.stock > 0).forEach(book => {
+                bookSelect.add(new Option(
+                    `${book.title} (Stock: ${book.stock})`,
+                    book.id
+                ));
+            });
+        } else if (statusSelect.value === 'returned') {
+            const memberTransactions = issuedTransactions.filter(t => t.member_id === parseInt(this.value));
+            memberTransactions.forEach(transaction => {
+                const book = availableBooks.find(b => b.id === transaction.book_id);
+                if (book) {
+                    bookSelect.add(new Option(
+                        `${book.title} (Issued: ${transaction.issue_date})`,
+                        book.id
+                    ));
+                }
+            });
+        }
+    });
+
+    bookSelect.addEventListener('change', function () {
+        if (statusSelect.value === 'returned') {
+            const transaction = issuedTransactions.find(t =>
+                t.member_id === parseInt(memberSelect.value) &&
+                t.book_id === parseInt(this.value)
+            );
+
+            if (transaction) {
+                document.getElementById('issue_date').value = transaction.issue_date;
+                document.getElementById('due_date').value = transaction.due_date;
+            }
+        }
+        submitBtn.disabled = false;
+    });
+
+    // Event listener to update fine when return date changes
+    returnDateInput.addEventListener('input', function () {
+        calculateLateFine();
+    });
+
+    // Event listener to update fine when late days change
+    lateDaysInput.addEventListener('input', function () {
+        calculateLateFine();
+    });
+
+    function calculateLateFine() {
+        const returnDate = new Date(returnDateInput.value);
+        const dueDate = new Date(document.getElementById('due_date').value);
+
+        if (!isNaN(returnDate) && !isNaN(dueDate)) {
+            const lateDays = Math.max(0, Math.floor((returnDate - dueDate) / (1000 * 60 * 60 * 24)));
+            const lateFine = lateDays * 5;
+            const outstandingDebt = parseFloat(document.getElementById('outstanding_debt').value) || 0;
+
+            lateDaysInput.value = lateDays;
+            fineInput.value = lateFine;
+            totalPayableInput.value = outstandingDebt + lateFine;
+        }
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (statusSelect.value === 'returned') {
+            if (!invoiceIdInput.value.trim() || !modeOfPaymentInput.value.trim()) {
+                alert("Invoice ID and Mode of Payment are required to complete the return.");
+                return;
+            }
+        }
+
+        const formData = new FormData(form);
+        try {
+            const response = await fetch("{{ url_for('create_transaction') }}", {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message);
+                window.location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            alert('An error occurred while processing the transaction');
+        }
+    });
+});
+    
+</script>
 
 {% endblock %}

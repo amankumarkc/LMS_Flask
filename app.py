@@ -331,6 +331,16 @@ def create_transaction():
                 }), 201
 
             elif status == 'returned':
+                # Invoice ID and Mode of Payment are mandatory
+                mode_of_payment = request.form.get('mode_of_payment')
+                invoice_id = request.form.get('invoice_id')
+                
+                if not mode_of_payment or not invoice_id:
+                    return jsonify({
+                        "success": False,
+                        "message": "Invoice ID and Mode of Payment are required to return a book."
+                    }), 400
+
                 # Get the original transaction
                 transaction = Transaction.get(
                     (Transaction.member == member) & 
@@ -341,16 +351,8 @@ def create_transaction():
                 return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d').date()
                 late_days = max(0, (return_date - transaction.due_date).days)
                 late_fine = late_days * 5
-                total_payable = member.outstanding_debt + late_fine
-                
-                mode_of_payment = request.form.get('mode_of_payment')
-                invoice_id = request.form.get('invoice_id')
-                
-                if total_payable > 500 and (not mode_of_payment or not invoice_id):
-                    return jsonify({
-                        "success": False,
-                        "message": "Payment required for outstanding amount exceeding ₹500"
-                    }), 400
+                rent_fee = 40  # Rent fee is fixed
+                total_deduction = rent_fee + late_fine
 
                 # Update transaction
                 transaction.return_date = return_date
@@ -365,11 +367,8 @@ def create_transaction():
                 book.stock += 1
                 book.save()
 
-                # Update member debt
-                if mode_of_payment and invoice_id:
-                    member.outstanding_debt = 0
-                else:
-                    member.outstanding_debt += late_fine
+                # Update member debt (Ensuring it doesn't go negative)
+                member.outstanding_debt = max(0, member.outstanding_debt - total_deduction)
                 member.save()
 
                 return jsonify({
