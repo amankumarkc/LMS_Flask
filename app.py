@@ -1,9 +1,9 @@
-from flask import Flask, render_template, redirect, request, make_response, jsonify, Response
+from flask import Flask, render_template, redirect, request, make_response, jsonify, Response, flash, url_for
 from config import db
 from models import Book, Member, Transaction
-from peewee import IntegrityError
+from peewee import IntegrityError, DoesNotExist
 from weasyprint import HTML
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from books_api import fetch_books, save_books_to_db
 
 app = Flask(__name__)
@@ -17,6 +17,26 @@ def home():
 def books():
     all_books = Book.select()  # Fetch all books from DB
     return render_template("books.html", books=all_books)
+
+# Add(Import) Book Page
+@app.route("/books_api", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        title = request.form.get("title", "")
+        authors = request.form.get("authors", "")
+        isbn = request.form.get("isbn", "")
+        publisher = request.form.get("publisher", "")
+        num_pages = request.form.get("num_pages", "")
+        required_books = int(request.form.get("required_books", 20))
+
+        books = fetch_books(title, authors, isbn, publisher, num_pages, required_books)
+        if books:
+            save_books_to_db(books)  # Store books in DB
+
+        return render_template("books_api.html", books=books)   
+        
+
+    return render_template("books_api.html", books=[])
 
 # Edit Book Page
 @app.route('/edit-books/<int:book_id>', methods=['GET', 'POST'])
@@ -74,6 +94,7 @@ def members():
     all_members = Member.select()  # Fetch all members from the database
     return render_template("members.html", members=all_members)
 
+# Create Member Page
 @app.route('/create-member', methods=['GET', 'POST'])
 def create_member():
     if request.method == 'POST':
@@ -152,6 +173,9 @@ def edit_member(member_id):
         member.pincode = request.form.get("pincode", member.pincode)
         member.dob = request.form.get("dob", member.dob)
         member.gender = request.form.get("gender", member.gender)
+        member.card_status = request.form.get("card_status", member.card_status)
+        member.card_expiry = request.form.get("card_expiry", member.card_expiry)
+        member.outstanding_debt = request.form.get("outstanding_debt", member.outstanding_debt)
 
         # Regenerate Member ID if Name, Gender, or Phone changes
         new_member_id = (member.first_name[0] + member.last_name[0] + member.gender[0] + member.phone[-2:]).upper()
@@ -220,27 +244,143 @@ def download_pdf(member_id):
 
     return response
 
-@app.route('/create-transaction')
+# Create Transaction Page
+@app.route('/create-transaction', methods=['GET', 'POST'])
 def create_transaction():
-    return render_template("create-transaction.html")
+    if request.method == 'GET':
+        # Serialize members data
+        members_data = [
+            {
+                'id': member.id,
+                'first_name': member.first_name,
+                'last_name': member.last_name,
+                'member_id': member.member_id,
+                'outstanding_debt': float(member.outstanding_debt)
+            }
+            for member in Member.select()
+        ]
 
-@app.route("/books_api", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        title = request.form.get("title", "")
-        authors = request.form.get("authors", "")
-        isbn = request.form.get("isbn", "")
-        publisher = request.form.get("publisher", "")
-        num_pages = request.form.get("num_pages", "")
-        required_books = int(request.form.get("required_books", 20))
+        # Serialize books data
+        books_data = [
+            {
+                'id': book.id,
+                'title': book.title,
+                'author': book.author,
+                'stock': book.stock
+            }
+            for book in Book.select().where(Book.stock > 0)
+        ]
 
-        books = fetch_books(title, authors, isbn, publisher, num_pages, required_books)
-        if books:
-            save_books_to_db(books)  # Store books in DB
+        # Serialize transactions data
+        transactions_data = [
+            {
+                'id': trans.id,
+                'member_id': trans.member.id,
+                'book_id': trans.book.id,
+                'issue_date': trans.issue_date.strftime('%Y-%m-%d'),
+                'due_date': trans.due_date.strftime('%Y-%m-%d'),
+                'status': trans.status
+            }
+            for trans in Transaction.select().where(Transaction.status == 'issued')
+        ]
 
-        return render_template("books_api.html", books=books)   
-        
+        return render_template(
+            "create-transaction.html",
+            members=members_data,
+            books=books_data,
+            transactions=transactions_data,
+            today=date.today().strftime('%Y-%m-%d')
+        )
 
-    return render_template("books_api.html", books=[])
+    elif request.method == 'POST':
+        try:
+            status = request.form['status']
+            member_id = request.form['member']
+            book_id = request.form['book']
+            member = Member.get_by_id(member_id)
+            book = Book.get_by_id(book_id)
 
+            if status == 'issued':
+                # Check outstanding debt
+                current_outstanding = member.outstanding_debt + 40  # Adding new rent
+                if current_outstanding > 500:
+                    return jsonify({
+                        "success": False,
+                        "message": "Cannot issue book. Outstanding debt would exceed ₹500"
+                    }), 400
 
+                # Create transaction
+                transaction = Transaction.create(
+                    member=member,
+                    book=book,
+                    issue_date=date.today(),
+                    due_date=date.today() + timedelta(days=14),
+                    status='issued',
+                    rent_fee=40
+                )
+
+                # Update book stock and member debt
+                book.stock -= 1
+                book.save()
+                member.outstanding_debt = current_outstanding
+                member.save()
+
+                return jsonify({
+                    "success": True,
+                    "message": f"Book '{book.title}' successfully issued to {member.first_name} {member.last_name}"
+                }), 201
+
+            elif status == 'returned':
+                # Get the original transaction
+                transaction = Transaction.get(
+                    (Transaction.member == member) & 
+                    (Transaction.book == book) & 
+                    (Transaction.status == 'issued')
+                )
+                
+                return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d').date()
+                late_days = max(0, (return_date - transaction.due_date).days)
+                late_fine = late_days * 5
+                total_payable = member.outstanding_debt + late_fine
+                
+                mode_of_payment = request.form.get('mode_of_payment')
+                invoice_id = request.form.get('invoice_id')
+                
+                if total_payable > 500 and (not mode_of_payment or not invoice_id):
+                    return jsonify({
+                        "success": False,
+                        "message": "Payment required for outstanding amount exceeding ₹500"
+                    }), 400
+
+                # Update transaction
+                transaction.return_date = return_date
+                transaction.late_days = late_days
+                transaction.fine = late_fine
+                transaction.status = 'returned'
+                transaction.mode_of_payment = mode_of_payment
+                transaction.invoice_id = invoice_id
+                transaction.save()
+
+                # Update book stock
+                book.stock += 1
+                book.save()
+
+                # Update member debt
+                if mode_of_payment and invoice_id:
+                    member.outstanding_debt = 0
+                else:
+                    member.outstanding_debt += late_fine
+                member.save()
+
+                return jsonify({
+                    "success": True,
+                    "message": f"Book '{book.title}' successfully returned by {member.first_name} {member.last_name}"
+                }), 200
+
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "message": f"An error occurred: {str(e)}"
+            }), 500
+
+    return jsonify({"success": False, "message": "Invalid request"}), 400

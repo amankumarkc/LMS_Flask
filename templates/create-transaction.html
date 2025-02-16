@@ -4,91 +4,74 @@
 <div class="container mt-4">
     <h2 class="mb-3">📚 Create New Transaction</h2>
 
-    <form method="POST" action="{{ url_for('create_transaction') }}" class="row g-3 shadow p-4 rounded bg-light">
+    <form id="transactionForm" method="POST" action="{{ url_for('create_transaction') }}" class="row g-3 shadow p-4 rounded bg-light">
+        <!-- Status -->
+        <div class="col-md-12">
+            <label for="status" class="form-label">Transaction Status</label>
+            <select class="form-select" id="status" name="status" required>
+                <option value="" selected disabled>Select Status</option>
+                <option value="issued">Issued</option>
+                <option value="returned">Returned</option>
+            </select>
+        </div>
 
         <!-- Member Selection -->
         <div class="col-md-6">
             <label for="member" class="form-label">Member</label>
-            <select class="form-select" id="member" name="member" required>
+            <select class="form-select" id="member" name="member" required disabled>
                 <option value="" selected disabled>Select Member</option>
-                {% for member in members %}
-                <option value="{{ member.id }}">{{ member.first_name }} {{ member.last_name }} (ID: {{ member.member_id }})</option>
-                {% endfor %}
             </select>
         </div>
 
         <!-- Book Selection -->
         <div class="col-md-6">
             <label for="book" class="form-label">Book</label>
-            <select class="form-select" id="book" name="book" required>
+            <select class="form-select" id="book" name="book" required disabled>
                 <option value="" selected disabled>Select Book</option>
-                {% for book in books %}
-                <option value="{{ book.id }}">{{ book.title }} ({{ book.author }})</option>
-                {% endfor %}
             </select>
         </div>
 
-        <!-- Issue Date (Auto-filled with today's date) -->
+        <!-- Issue Date -->
         <div class="col-md-6">
             <label for="issue_date" class="form-label">Issue Date</label>
-            <input type="date" class="form-control" id="issue_date" name="issue_date" value="{{ today }}" required readonly>
+            <input type="date" class="form-control" id="issue_date" name="issue_date" readonly>
         </div>
 
-        <!-- Due Date (Auto-calculated) -->
+        <!-- Due Date -->
         <div class="col-md-6">
             <label for="due_date" class="form-label">Due Date</label>
-            <input type="date" class="form-control" id="due_date" name="due_date" required>
+            <input type="date" class="form-control" id="due_date" name="due_date" readonly>
         </div>
 
-        <!-- Return Date -->
-        <div class="col-md-6">
+        <!-- Return Date (Hidden for Issue) -->
+        <div class="col-md-6 return-only" style="display: none;">
             <label for="return_date" class="form-label">Return Date</label>
-            <input type="date" class="form-control" id="return_date" name="return_date">
+            <input type="date" class="form-control" id="return_date" name="return_date" value="{{ today }}">
         </div>
 
-        <!-- Rent Fee & Fine -->
-        <div class="col-md-3">
-            <label for="rent_fee" class="form-label">Rent Fee</label>
-            <input type="number" step="0.01" class="form-control" id="rent_fee" name="rent_fee" value="0" required>
-        </div>
-        <div class="col-md-3">
-            <label for="fine" class="form-label">Fine</label>
-            <input type="number" step="0.01" class="form-control" id="fine" name="fine" value="0">
-        </div>
-
-        <!-- Status -->
+        <!-- Outstanding Debt -->
         <div class="col-md-6">
-            <label for="status" class="form-label">Transaction Status</label>
-            <select class="form-select" id="status" name="status" required>
-                <option value="issued" selected>Issued</option>
-                <option value="returned">Returned</option>
-            </select>
+            <label for="outstanding_debt" class="form-label">Current Outstanding Debt</label>
+            <input type="number" class="form-control" id="outstanding_debt" readonly>
         </div>
 
-        <!-- Renewal Count & Limit -->
-        <div class="col-md-3">
-            <label for="renewal_count" class="form-label">Renewal Count</label>
-            <input type="number" class="form-control" id="renewal_count" name="renewal_count" value="0" readonly>
-        </div>
-        <div class="col-md-3">
-            <label for="renewal_limit" class="form-label">Renewal Limit</label>
-            <input type="number" class="form-control" id="renewal_limit" name="renewal_limit" value="2" readonly>
-        </div>
-
-        <!-- Remarks -->
-        <div class="col-md-6">
-            <label for="remarks" class="form-label">Remarks</label>
-            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
-        </div>
-
-        <!-- Late Days (Auto-Calculated) -->
-        <div class="col-md-3">
+        <!-- Return-only fields -->
+        <div class="col-md-4 return-only" style="display: none;">
             <label for="late_days" class="form-label">Late Days</label>
-            <input type="number" class="form-control" id="late_days" name="late_days" value="0" readonly>
+            <input type="number" class="form-control" id="late_days" name="late_days" readonly>
         </div>
 
-        <!-- Mode of Payment -->
-        <div class="col-md-6">
+        <div class="col-md-4 return-only" style="display: none;">
+            <label for="fine" class="form-label">Late Fine</label>
+            <input type="number" class="form-control" id="fine" name="fine" readonly>
+        </div>
+
+        <div class="col-md-4 return-only" style="display: none;">
+            <label for="total_payable" class="form-label">Total Payable</label>
+            <input type="number" class="form-control" id="total_payable" readonly>
+        </div>
+
+        <div class="col-md-6 return-only" style="display: none;">
             <label for="mode_of_payment" class="form-label">Mode of Payment</label>
             <select class="form-select" id="mode_of_payment" name="mode_of_payment">
                 <option value="" selected disabled>Select Payment Mode</option>
@@ -97,65 +80,158 @@
             </select>
         </div>
 
-        <!-- Invoice ID -->
-        <div class="col-md-6">
+        <div class="col-md-6 return-only" style="display: none;">
             <label for="invoice_id" class="form-label">Invoice ID</label>
             <input type="text" class="form-control" id="invoice_id" name="invoice_id">
         </div>
 
         <!-- Submit Button -->
         <div class="col-12 text-end">
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Create Transaction</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                Create Transaction
+            </button>
         </div>
     </form>
 </div>
 
-<!-- Auto-calculate Due Date -->
 <script>
-    
-    // Calculate late days when return date is selected
-    document.getElementById("return_date").addEventListener("change", function () {
-        let returnDate = new Date(this.value);
-        let dueDate = new Date(document.getElementById("due_date").value);
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('transactionForm');
+        const statusSelect = document.getElementById('status');
+        const memberSelect = document.getElementById('member');
+        const bookSelect = document.getElementById('book');
+        const returnOnlyFields = document.querySelectorAll('.return-only');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Parse data from backend
+        const availableMembers = JSON.parse('{{ members|tojson|safe }}');
+        const availableBooks = JSON.parse('{{ books|tojson|safe }}');
+        const issuedTransactions = JSON.parse('{{ transactions|tojson|safe }}');
+        
+        statusSelect.addEventListener('change', function() {
+            memberSelect.disabled = false;
+            memberSelect.innerHTML = '<option value="" selected disabled>Select Member</option>';
+            bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
+            
+            if (this.value === 'issued') {
+                // Populate all members
+                availableMembers.forEach(member => {
+                    memberSelect.add(new Option(
+                        `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
+                        member.id
+                    ));
+                });
 
-        let lateDays = Math.max(0, Math.ceil((returnDate - dueDate) / (1000 * 60 * 60 * 24))); // Convert to days
-        document.getElementById("late_days").value = lateDays;
-    });
+                // Hide return-only fields
+                returnOnlyFields.forEach(field => field.style.display = 'none');
 
-    document.addEventListener("DOMContentLoaded", function () {
-        let issueDateInput = document.getElementById("issue_date");
-        let dueDateInput = document.getElementById("due_date");
+                // Set default dates
+                const today = new Date();
+                const dueDate = new Date();
+                dueDate.setDate(today.getDate() + 14);
+                
+                document.getElementById('issue_date').value = today.toISOString().split('T')[0];
+                document.getElementById('due_date').value = dueDate.toISOString().split('T')[0];
+            } else if (this.value === 'returned') {
+                // Show only members who have issued books
+                const membersWithBooks = [...new Set(issuedTransactions.map(t => t.member_id))];
+                availableMembers.filter(m => membersWithBooks.includes(m.id)).forEach(member => {
+                    memberSelect.add(new Option(
+                        `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
+                        member.id
+                    ));
+                });
 
-        function calculateDueDate() {
-            if (issueDateInput.value) {
-                // Extract MM/DD/YYYY format correctly
-                let issueDateParts = issueDateInput.value.split("/");
-                let month = parseInt(issueDateParts[0]) - 1; // Months are 0-indexed in JS
-                let day = parseInt(issueDateParts[1]);
-                let year = parseInt(issueDateParts[2]);
-
-                let issueDate = new Date(year, month, day);
-
-                // Add 15 days
-                issueDate.setDate(issueDate.getDate() + 15);
-
-                // Format back to MM/DD/YYYY
-                let newMonth = (issueDate.getMonth() + 1).toString().padStart(2, '0'); // Ensure two-digit month
-                let newDay = issueDate.getDate().toString().padStart(2, '0'); // Ensure two-digit day
-                let newYear = issueDate.getFullYear();
-
-                let formattedDueDate = `${newMonth}/${newDay}/${newYear}`;
-
-                dueDateInput.value = formattedDueDate; // Auto-fill Due Date
+                // Show return-only fields
+                returnOnlyFields.forEach(field => field.style.display = 'block');
             }
-        }
+        });
 
-        // Automatically calculate due date on page load
-        calculateDueDate();
+        memberSelect.addEventListener('change', function() {
+            bookSelect.disabled = false;
+            bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
+
+            // Fetch member's outstanding debt
+            const selectedMember = availableMembers.find(m => m.id === parseInt(this.value));
+            if (selectedMember) {
+                document.getElementById('outstanding_debt').value = selectedMember.outstanding_debt;
+            }
+
+            if (statusSelect.value === 'issued') {
+                // Show only books with stock > 0
+                availableBooks.filter(book => book.stock > 0).forEach(book => {
+                    bookSelect.add(new Option(
+                        `${book.title} (Stock: ${book.stock})`,
+                        book.id
+                    ));
+                });
+            } else if (statusSelect.value === 'returned') {
+                // Show only books issued to the selected member
+                const memberTransactions = issuedTransactions.filter(t => t.member_id === parseInt(this.value));
+                memberTransactions.forEach(transaction => {
+                    const book = availableBooks.find(b => b.id === transaction.book_id);
+                    if (book) {
+                        bookSelect.add(new Option(
+                            `${book.title} (Issued: ${transaction.issue_date})`,
+                            book.id
+                        ));
+                    }
+                });
+            }
+        });
+
+        bookSelect.addEventListener('change', function() {
+            if (statusSelect.value === 'returned') {
+                const transaction = issuedTransactions.find(t => 
+                    t.member_id === parseInt(memberSelect.value) && 
+                    t.book_id === parseInt(this.value)
+                );
+
+                if (transaction) {
+                    document.getElementById('issue_date').value = transaction.issue_date;
+                    document.getElementById('due_date').value = transaction.due_date;
+
+                    // Calculate late days and fine
+                    const returnDate = new Date(document.getElementById('return_date').value);
+                    const dueDate = new Date(transaction.due_date);
+                    const lateDays = Math.max(0, Math.floor((returnDate - dueDate) / (1000 * 60 * 60 * 24)));
+                    const lateFine = lateDays * 5;
+
+                    document.getElementById('late_days').value = lateDays;
+                    document.getElementById('fine').value = lateFine;
+                    document.getElementById('total_payable').value = 
+                        parseFloat(document.getElementById('outstanding_debt').value) + lateFine;
+                }
+            }
+
+            // Enable submit button
+            submitBtn.disabled = false;
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            try {
+                const response = await fetch("{{ url_for('create_transaction') }}", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message);
+                    window.location.reload();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('An error occurred while processing the transaction');
+            }
+        });
     });
 
-    
-
-</script>
+    </script>
 
 {% endblock %}
