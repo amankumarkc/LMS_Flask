@@ -2,10 +2,11 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h2 class="mb-3">📋 Library Members</h2>
+    <h2 class="mb-3">📋 Library Members</h2>  
 
     <div class="d-flex justify-content-between mb-3">
         <a class="btn btn-primary" href="/create-member">+ Add Member</a>
+        <a href="{{ url_for('download_members_csv') }}" class="btn btn-success mb-3">📥 Download Members CSV</a>
         
         <!-- Filter Dropdowns -->
         <div class="d-flex">

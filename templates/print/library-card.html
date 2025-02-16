@@ -2,204 +2,366 @@
 
 {% block body %}
 <div class="print-container">
-    <!-- Front Side -->
-    <div class="card-wrapper front-card">
-        <div class="card-header">
-            <div class="header-left">
-                <img src="{{ url_for('static', filename='library_logo.png') }}" class="org-logo" alt="Library Logo">
-            </div>
-            <div class="header-center">
-                <h1 class="org-title">SelfDESK Library</h1>
-                <p class="org-subtitle">Knowledge Empowers All</p>
-            </div>
-            <div class="header-right">
-                <div class="card-type">Premium Card</div>
+    <!-- Page Header -->
+    <header class="page-header">
+        <h1>✨ SelfDESK Premium Library</h1>
+        <p class="subtitle">Member Card Print Sheet</p>
+    </header>
+
+    <!-- Cards Container -->
+    <div class="cards-container">
+        <!-- Front Side -->
+        <div class="card-wrapper front-card">
+            <div class="premium-card">
+                <div class="shimmer-layer"></div>
+                <div class="card-content">
+                    <div class="top-section">
+                        <div class="member-id">{{ member.member_id }}</div>
+                        <div class="card-type">Premium</div>
+                    </div>
+
+                    <div class="main-section">
+                        <div class="title-section">
+                            <h2>SelfDESK Library</h2>
+                            <div class="premium-badge">✦ Premium Member ✦</div>
+                        </div>
+
+                        <div class="member-details">
+                            <div class="detail-row">
+                                <span class="label">Name</span>
+                                <span class="value">{{ member.first_name }} {{ member.last_name }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Date of Birth</span>
+                                <span class="value">{{ member.dob.strftime('%d-%m-%Y') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Phone</span>
+                                <span class="value">{{ member.phone }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Valid Till</span>
+                                <span class="value">{{ member.card_expiry.strftime('%d-%m-%Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card-body">
-            <div class="details-section">
-                <div class="detail-row">
-                    <span class="label">Name / नाम</span>
-                    <span class="value">: {{ member.first_name }} {{ member.last_name }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">Member ID / सदस्य आईडी</span>
-                    <span class="value">: {{ member.member_id }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">DOB / जन्म तिथि</span>
-                    <span class="value">: {{ member.dob.strftime('%d/%m/%Y') }}</span>
-                </div>
-                <div class="detail-row">
-                    <span class="label">Phone / फ़ोन</span>
-                    <span class="value">: {{ member.phone }}</span>
+        <!-- Back Side -->
+        <div class="card-wrapper back-card">
+            <div class="premium-card">
+                <div class="back-content">
+                    <!-- Member Address -->
+                    <div class="member-address">
+                        <p>📍 Sector 26, Chandigarh,</p>
+                        <p>Chandigarh - 160019</p>
+                    </div>
+
+                    <!-- Return Info Box -->
+                    <div class="return-info-box">
+                        <p class="return-text">If found, please return to:</p>
+                        <h3 class="library-name">✨ SelfDESK Library ✨</h3>
+                        <p class="contact">📱 +91 9876543210</p>
+                        <p class="location">🏛️ Sector 17, Chandigarh</p>
+                    </div>
+
+                    <!-- Copyright -->
+                    <div class="back-copyright">
+                        © SelfDESK Library • All Rights Reserved
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card-footer">
-            <div class="validity">Valid Till: {{ member.card_expiry.strftime('%d/%m/%Y') }}</div>
-            <div class="signature">Authorized Signature</div>
         </div>
     </div>
 
-    <!-- Back Side -->
-    <div class="card-wrapper back-card">
-        <div class="back-header">
-            <h2>Terms & Conditions</h2>
-        </div>
-
-        <div class="back-content">
-            <div class="address-block">
-                <p class="contact-title">Contact Information</p>
-                <p>📍 {{ member.locality }}, {{ member.city }}</p>
-                <p>{{ member.state }} - {{ member.pincode }}</p>
-                <p>📱 Emergency: +91 9876543210</p>
-            </div>
-
-            <div class="terms-list">
-                <p>1. This card is the property of SelfDESK Library.</p>
-                <p>2. Card must be presented for all library transactions.</p>
-                <p>3. Loss of card should be reported immediately.</p>
-            </div>
-        </div>
-
-        <div class="back-footer">
-            <div class="helpline">
-                <span>Helpline: 14434</span>
-                <span>|</span>
-                <span>Website: library.selfdesk.org</span>
-            </div>
-            <div class="tagline">
-                Empowering Minds, Enriching Lives
-            </div>
-        </div>
-    </div>
+    <!-- Page Footer -->
+    <footer class="page-footer">
+        <p class="copyright">© 2025 SelfDESK Library • All Rights Reserved</p>
+        <p class="address">🏛️ Sector 17, Chandigarh | 📧 contact@selfdesk.org</p>
+    </footer>
 </div>
 
+
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Caudex:wght@400;700&display=swap');
 
-    :root {
-        --primary-color: #1a5f7a;
-        --secondary-color: #c17917;
-        --accent-color: #f8b87a;
-        --background-color: #f7f9fc;
-        --text-color: #2c3e50;
-        --border-color: #e2e8f0;
+:root {
+    --gradient-start: #2c3e50;
+    --gradient-end: #3498db;
+    --gold: #ffd700;
+    --silver: #e0e0e0;
+    --card-width: 85.6mm;  /* Standard CR80 card width */
+    --card-height: 53.98mm; /* Standard CR80 card height */
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
     }
-
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .print-container, .print-container * {
-            visibility: visible;
-        }
-        .print-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-        }
+    .print-container, .print-container * {
+        visibility: visible;
     }
-
     .print-container {
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+        position: absolute;
+        left: 0;
+        top: 0;
     }
+}
 
-    .card-wrapper {
-        width: 90mm;
-        height: 55mm;
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-        border: 1px solid var(--border-color);
-        position: relative;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        page-break-after: always;
-    }
+/* Container Styles */
+.print-container {
+    min-height: 297mm; /* A4 height */
+    width: 210mm; /* A4 width */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20mm;
+    font-family: 'Caudex', serif;
+}
 
-    .front-card {
-        background: linear-gradient(135deg, #ffffff 0%, var(--background-color) 100%);
-    }
+/* Header Styles */
+.page-header {
+    text-align: center;
+    margin-bottom: 30mm;
+}
 
-    .card-header {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        background: linear-gradient(90deg, var(--primary-color) 0%, #2980b9 100%);
-        color: white;
-    }
+.page-header h1 {
+    color: var(--gradient-start);
+    font-size: 24pt;
+    margin: 0;
+}
 
-    .header-left .org-logo {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-    }
+.subtitle {
+    color: var(--gradient-end);
+    font-size: 14pt;
+    margin: 5mm 0;
+}
 
-    .header-center {
-        flex: 1;
-        text-align: center;
-    }
+/* Cards Container */
+.cards-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40mm;
+    flex-grow: 1;
+    justify-content: center;
+}
 
-    .org-title {
-        font-size: 16px;
-        font-weight: 700;
+.card-wrapper {
+    width: var(--card-width);
+    height: var(--card-height);
+    position: relative;
+}
+
+/* Card Base Styles */
+.premium-card {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    border-radius: 2.5mm;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2mm 4mm rgba(0,0,0,0.2);
+}
+
+.shimmer-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        45deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 45%,
+        transparent 100%
+    );
+}
+
+/* Front Card Specific Styles */
+.card-content {
+    padding: 3mm;
+    color: white;
+    position: relative;
+    z-index: 2;
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2mm;
+}
+
+.member-id {
+    font-size: 3mm;
+    font-weight: bold;
+}
+
+.card-type {
+    background: var(--gold);
+    color: var(--gradient-start);
+    padding: 1mm 2mm;
+    border-radius: 1mm;
+    font-size: 2.5mm;
+    font-weight: bold;
+}
+
+.title-section {
+    text-align: center;
+    margin: 2mm 0;
+}
+
+.title-section h2 {
+    font-size: 4mm;
+    color: var(--gold);
+    margin: 0;
+    text-shadow: 0 0.5mm 1mm rgba(0,0,0,0.3);
+}
+
+.premium-badge {
+    font-size: 2.5mm;
+    color: var(--gold);
+    margin-top: 1mm;
+}
+
+.member-details {
+    margin: 3mm 0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.5mm 0;
+    font-size: 2.5mm;
+}
+
+.label {
+    color: var(--silver);
+    font-weight: bold;
+}
+
+/* Back Card Specific Styles */
+/* Back Card Specific Styles */
+.back-content {
+    padding: 5mm;
+    color: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    text-align: center;
+    position: relative;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); /* Add gradient background */
+    border-radius: 2.5mm; /* Match front card style */
+    box-shadow: 0 2mm 4mm rgba(0,0,0,0.2); /* Add shadow for depth */
+}
+
+.member-address {
+    width: 100%;
+    text-align: center;
+    font-size: 3mm; /* Slightly larger font for better readability */
+    margin: 3mm 0;
+}
+
+.member-address p {
+    margin: 0.8mm 0;
+    line-height: 1.4;
+}
+
+.return-info-box {
+    background: rgba(255, 255, 255, 0.2); /* Slightly more opaque for better visibility */
+    border-radius: 2mm;
+    padding: 4mm;
+    width: 90%;
+    margin: 2mm auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5mm;
+}
+
+.return-text {
+    font-size: 3mm; /* Increased font size */
+    color: var(--silver);
+    margin-bottom: 1mm;
+}
+
+.library-name {
+    color: var(--gold);
+    font-size: 4mm; /* Increased font size */
+    font-weight: bold;
+    margin: 1.5mm 0;
+    line-height: 1.2;
+}
+
+.contact, .location {
+    font-size: 3mm; /* Increased font size */
+    margin: 0.8mm 0;
+    line-height: 1.4;
+}
+
+.back-copyright {
+    width: 100%;
+    text-align: center;
+    font-size: 2.5mm; /* Increased font size */
+    color: var(--silver);
+    position: absolute;
+    bottom: 3mm;
+    left: 0;
+    padding: 0 3mm;
+}
+
+/* Centering the header, footer, and cards */
+.print-container {
+    min-height: 297mm; /* A4 height */
+    width: 210mm; /* A4 width */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    padding: 20mm;
+    font-family: 'Caudex', serif;
+}
+
+/* Footer Styles */
+.page-footer {
+    text-align: center;
+    color: var(--gradient-start);
+    font-size: 10pt;
+    margin-top: 30mm;
+}
+
+.page-footer p {
+    margin: 2mm 0;
+}
+
+/* Print-specific optimizations */
+@page {
+    size: A4;
+    margin: 0;
+}
+
+@media print {
+    .print-container {
+        padding: 0;
         margin: 0;
     }
 
-    .org-subtitle {
-        font-size: 10px;
-        margin: 2px 0 0;
+    .premium-card {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
     }
 
-    .card-type {
-        background: var(--secondary-color);
-        color: white;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 500;
+    .shimmer-layer {
+        display: none;
     }
-
-    .card-body {
-        padding: 10px;
-    }
-
-    .details-section {
-        font-size: 11px;
-    }
-
-    .detail-row {
-        display: flex;
-        margin: 4px 0;
-    }
-
-    .label {
-        width: 120px;
-        color: var(--text-color);
-        font-weight: 500;
-    }
-
-    .value {
-        flex: 1;
-        color: var(--text-color);
-    }
-
-    .card-footer {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        padding: 8px;
-        background: var(--primary-color);
-        color: white;
-        font-size: 10px;
-    }
+}
 </style>
 {% endblock %}
