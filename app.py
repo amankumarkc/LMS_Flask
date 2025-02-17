@@ -4,9 +4,10 @@ from models import Book, Member, Transaction
 from peewee import IntegrityError, DoesNotExist
 from weasyprint import HTML
 from datetime import datetime, timedelta, date
-from books_api import fetch_books, save_books_to_db
+from books_api import fetch_books, save_books_to_db, generate_arn
 import csv
 from io import StringIO
+
 
 app = Flask(__name__)
 
@@ -21,9 +22,18 @@ def books():
     return render_template("books.html", books=all_books)
 
 
+
 @app.route('/transactions')
 def transactions():
     all_transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
+    
+    for transaction in all_transactions:
+        if transaction.invoice_id is None:  # Generate ARN only if it is not assigned
+            arn = generate_arn(transaction)
+            if arn:
+                transaction.invoice_id = arn
+                transaction.save()
+    
     return render_template("transactions.html", transactions=all_transactions)
 
 # Add(Import) Book Page
@@ -503,3 +513,5 @@ def download_transaction_pdf(id):
         return response
     except Transaction.DoesNotExist:
         return "Transaction not found", 404
+
+
