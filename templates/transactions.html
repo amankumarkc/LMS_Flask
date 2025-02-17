@@ -46,6 +46,7 @@
                     <th>Issue Date</th>
                     <th>Due Date</th>
                     <th>Return Date</th>
+                    <th>Invoice ID</th>
                     <th>Rent Fee</th>
                     <th>Fine</th>
                     <th>Status</th>
@@ -63,6 +64,13 @@
                     <td>{{ transaction.issue_date }}</td>
                     <td>{{ transaction.due_date }}</td>
                     <td>{{ transaction.return_date if transaction.return_date else 'Not Returned' }}</td>
+                    <td>
+                        {% if transaction.status == 'returned' %}
+                            <span class="text-success">{{ transaction.invoice_id }}</span>
+                        {% else %}
+                            <span class="text-secondary">Not Returned</span>
+                        {% endif %}
+                    </td>
                     <td>${{ transaction.rent_fee }}</td>
                     <td class="fine-cell" data-fine="{{ transaction.fine }}">${{ transaction.fine }}</td>
                     <td><span class="badge bg-{% if transaction.status == 'issued' %}warning{% else %}success{% endif %}">{{ transaction.status.capitalize() }}</span></td>
@@ -70,9 +78,9 @@
                         <a href="{{ url_for('download_transaction_pdf', id=transaction.id) }}" class="btn btn-info btn-sm">
                             <i class="bi bi-eye"></i> View
                         </a>                        
-                                               
+                        
                         {% if transaction.status == 'issued' %}
-                        <a href="/return-transaction/{{ transaction.id }}" class="btn btn-primary btn-sm">
+                        <a href="/create-transaction" class="btn btn-primary btn-sm">
                             <i class="bi bi-arrow-return-left"></i> Return
                         </a>
                         {% endif %}
@@ -210,7 +218,7 @@ document.getElementById("searchInput").addEventListener("keyup", function () {
     });
 });
 
-// Delete Transaction
+// Single Transaction Delete
 document.querySelectorAll(".delete-transaction").forEach(button => {
     button.addEventListener("click", function () {
         let transactionId = this.dataset.id;
@@ -230,11 +238,11 @@ document.querySelectorAll(".delete-transaction").forEach(button => {
                 .then(data => {
                     if (data.success) {
                         row.remove();
-                        Swal.fire("Deleted!", "Transaction has been removed.", "success");
+                        Swal.fire("Deleted!", "Transaction has been removed.", "success").then(() => location.reload());
                     } else {
                         Swal.fire("Error!", data.error, "error");
                     }
-                });
+                }).catch(error => Swal.fire("Error!", "Failed to delete transaction.", "error"));
             }
         });
     });
@@ -249,6 +257,7 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
     }
 
     let transactionIds = selectedTransactions.map(cb => cb.value);
+
     Swal.fire({
         title: "Are you sure?",
         text: `You are about to delete ${transactionIds.length} transactions.`,
@@ -264,9 +273,17 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
                 body: JSON.stringify({ transaction_ids: transactionIds })
             })
             .then(response => response.json())
-            .then(() => Swal.fire("Deleted!", "Selected transactions have been removed.", "success").then(() => location.reload()));
+            .then(data => {
+                if (data.success) {
+                    Swal.fire("Deleted!", "Selected transactions have been removed.", "success").then(() => location.reload());
+                } else {
+                    Swal.fire("Error!", data.error, "error");
+                }
+            }).catch(error => Swal.fire("Error!", "Failed to delete transactions.", "error"));
         }
     });
 });
+
+
 </script>
 {% endblock %}
