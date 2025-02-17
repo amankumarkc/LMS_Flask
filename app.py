@@ -20,6 +20,7 @@ def books():
     all_books = Book.select()  # Fetch all books from DB
     return render_template("books.html", books=all_books)
 
+
 @app.route('/transactions')
 def transactions():
     all_transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
@@ -102,10 +103,6 @@ def download_transactions_csv():
     response.headers["Content-Disposition"] = "attachment; filename=library_transactions.csv"
 
     return response
-
-
-
-
 
 
 # Edit Book Page
@@ -483,3 +480,26 @@ def create_transaction():
             }), 500
 
     return jsonify({"success": False, "message": "Invalid request"}), 400
+
+
+
+@app.route("/download_transaction_pdf/<int:id>")
+def download_transaction_pdf(id):
+    try:
+        # Fetch the transaction
+        transaction = Transaction.get_by_id(id)
+
+        # Render the receipt template
+        html_content = render_template("print/transaction-receipt.html", transaction=transaction)
+
+        # Convert to PDF
+        pdf = HTML(string=html_content).write_pdf()
+
+        # Create response
+        response = make_response(pdf)
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = f"inline; filename=receipt_{id}.pdf"
+
+        return response
+    except Transaction.DoesNotExist:
+        return "Transaction not found", 404
