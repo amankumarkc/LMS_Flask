@@ -293,19 +293,24 @@ def edit_member(member_id):
     return render_template("edit-member.html", member=member)
 
 # Delete Single Member API
-@app.route('/delete-member/<int:member_id>', methods=['DELETE'])
+@app.route("/delete-member/<int:member_id>", methods=["DELETE"])
 def delete_member(member_id):
-    member = Member.get_or_none(Member.id == member_id)
-    if member:
+    try:
+        member = Member.get_or_none(Member.id == member_id)
+
+        if not member:
+            return jsonify({"error": "Member not found"}), 404
+        
+        if member.outstanding_debt > 0:
+            return jsonify({"error": f"Cannot delete {member.first_name} {member.last_name}. Outstanding debt: ₹{member.outstanding_debt}"}), 400
+
         member.delete_instance()
-        return jsonify({
-            "success": True,  # ✅ Added success field
-            "message": f"Member '{member.first_name} {member.last_name}' has been successfully deleted!"
-        }), 200
-    return jsonify({"success": False, "error": "Member not found"}), 404
+        return jsonify({"success": True})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-# Delete Bulk Members API
 @app.route('/delete-members', methods=['POST'])
 def bulk_delete_members():
     data = request.get_json()
@@ -314,17 +319,30 @@ def bulk_delete_members():
     if not member_ids:
         return jsonify({"message": "No members selected!"}), 400
 
-    deleted_members = []
+    deletable_members = []
+    blocked_members = []
+
     for member_id in member_ids:
         member = Member.get_or_none(Member.id == member_id)
         if member:
-            deleted_members.append(f"{member.first_name} {member.last_name}")
+            if member.outstanding_debt > 0:
+                blocked_members.append(f"{member.first_name} {member.last_name} (₹{member.outstanding_debt})")
+            else:
+                deletable_members.append(member)
+
+    if deletable_members:
+        for member in deletable_members:
             member.delete_instance()
 
-    if not deleted_members:
-        return jsonify({"message": "No valid members found to delete!"}), 404
+    if blocked_members:
+        return jsonify({
+            "success": False,
+            "blocked_members": blocked_members,
+            "deleted_count": len(deletable_members)
+        }), 400
 
-    return jsonify({"message": f"Deleted members: {', '.join(deleted_members)}"}), 200
+    return jsonify({"success": True, "message": f"Deleted {len(deletable_members)} members."}), 200
+
 
 # View Member Card
 @app.route("/view-card/<int:member_id>")
@@ -511,3 +529,33 @@ def download_transaction_pdf(id):
         return response
     except Transaction.DoesNotExist:
         return "Transaction not found", 404
+
+    
+
+@app.route('/delete-transaction/<int:transaction_id>', methods=['DELETE'])
+def delete_transaction(transaction_id):
+    try:
+        transaction = Transaction.get_or_none(Transaction.id == transaction_id)
+        if transaction:
+            transaction.delete_instance()
+            return jsonify({'success': True, 'message': 'Transaction deleted successfully'}), 200
+        else:
+            return jsonify({'success': False, 'error': 'Transaction not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/delete-transactions', methods=['POST'])
+def delete_transactions():
+    try:
+        data = request.get_json()
+        transaction_ids = data.get('transaction_ids', [])
+
+        if not transaction_ids:
+            return jsonify({'success': False, 'error': 'No transaction IDs provided'}), 400
+
+        deleted_count = Transaction.delete().where(Transaction.id.in_(transaction_ids)).execute()
+        return jsonify({'success': True, 'deleted': deleted_count}), 200
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500

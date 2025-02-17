@@ -147,12 +147,18 @@ document.querySelectorAll(".stock-cell").forEach(cell => {
         });
     });
 
-    // Delete Member
+    // Delete Member   
     document.querySelectorAll(".delete-member").forEach(button => {
         button.addEventListener("click", function () {
             let memberId = this.dataset.id;
             let row = document.getElementById("memberRow-" + memberId);
             let fullName = row.children[2].innerText + " " + row.children[3].innerText;
+            let outstandingDebt = parseFloat(row.querySelector(".stock-cell").dataset.outstandingDebt);
+
+            if (outstandingDebt > 0) {
+                Swal.fire("Cannot Delete!", `${fullName} has outstanding debt of ₹${outstandingDebt}.`, "error");
+                return;
+            }
 
             Swal.fire({
                 title: "Are you sure?",
@@ -187,26 +193,62 @@ document.querySelectorAll(".stock-cell").forEach(cell => {
         }
 
         let memberIds = selectedMembers.map(cb => cb.value);
-        Swal.fire({
-            title: "Are you sure?",
-            text: `You are about to delete ${memberIds.length} members.`,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete them!",
-            cancelButtonText: "Cancel"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch("/delete-members", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ member_ids: memberIds })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.fire("Deleted!", "Selected members have been removed.", "success").then(() => location.reload());
-                });
-            }
+        let membersData = selectedMembers.map(cb => {
+            let row = document.getElementById("memberRow-" + cb.value);
+            let outstandingDebt = parseFloat(row.querySelector(".stock-cell").dataset.outstandingDebt);
+            return { id: cb.value, debt: outstandingDebt };
         });
+
+        let hasBlocked = membersData.some(member => member.debt > 0);
+
+        if (hasBlocked) {
+            Swal.fire({
+                title: "Some members have outstanding debt!",
+                text: "Only members with ₹0 outstanding debt will be deleted. Proceed?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Proceed",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    sendBulkDeleteRequest(memberIds);
+                }
+            });
+        } else {
+            Swal.fire({
+                title: "Are you sure?",
+                text: `You are about to delete ${memberIds.length} members.`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete them!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    sendBulkDeleteRequest(memberIds);
+                }
+            });
+        }
     });
+
+function sendBulkDeleteRequest(memberIds) {
+    fetch("/delete-members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ member_ids: memberIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire("Deleted!", data.message, "success").then(() => location.reload());
+        } else {
+            Swal.fire({
+                title: "Some members were not deleted!",
+                html: `Blocked Members:<br><b>${data.blocked_members.join("<br>")}</b><br><br>Deleted: ${data.deleted_count} members.`,
+                icon: "warning"
+            }).then(() => location.reload());
+        }
+    });
+}
+
 </script>
 {% endblock %}
