@@ -44,6 +44,7 @@
                     <th>Last Name</th>
                     <th>Email</th>
                     <th>Phone</th>
+                    <th>Outstanding Debt</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -56,6 +57,7 @@
                     <td>{{ member.last_name }}</td>
                     <td>{{ member.email[:4] }}***{{ member.email[-12:] }}</td>
                     <td>{{ member.phone[:2] }}******{{ member.phone[-2:] }}</td>
+                    <td class="stock-cell" data-outstanding-debt="{{ member.outstanding_debt }}">{{ member.outstanding_debt }}</td>
                     
                     <td>
                         <a href="{{ url_for('create_transaction') }}" class="btn btn-primary btn-sm">
@@ -87,6 +89,16 @@
 <!-- SweetAlert for Confirm Delete -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+document.querySelectorAll(".stock-cell").forEach(cell => {
+    let outstandingDebt = parseFloat(cell.dataset.outstandingDebt); // Use camelCase for dataset
+    if (outstandingDebt >= 500) {
+        cell.style.color = "red";
+        cell.style.fontWeight = "bold";
+    }
+});
+
+
 
     // Filter Members
     document.getElementById("filterCity").addEventListener("change", filterMembers);

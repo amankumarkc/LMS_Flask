@@ -44,14 +44,22 @@
                     <th>Name of Book</th>
                     <th>Author Name</th>
                     <th>Current Stock</th>
-                    <th>Actions</th>
+                    <th>Actions</th>  
                 </tr>
             </thead>
             <tbody id="booksTable">
                 {% for book in books %}
                 <tr class="book-row" data-language="{{ book.language }}" data-publisher="{{ book.publisher }}">
                     <td><input type="checkbox" class="book-checkbox" value="{{ book.id }}"></td>
-                    <td><img src="{{ book.cover_url or '/static/default_cover.jpg' }}" alt="Cover" width="50"></td>
+                    <td>
+                        <img src="{{ book.cover_url or '/static/default_cover.jpg' }}" 
+                             alt="Cover" 
+                             width="50" 
+                             class="book-cover" 
+                             data-title="{{ book.title | e }}" 
+                             data-author="{{ book.author | e }}">
+                    </td>
+                    
                     <td>{{ book.title }}</td>
                     <td>{{ book.author }}</td>
                     <td class="stock-cell" data-stock="{{ book.stock }}">{{ book.stock }}</td>
@@ -207,6 +215,52 @@
 
     document.getElementById("filterLanguage").addEventListener("change", applyFilters);
     document.getElementById("filterPublisher").addEventListener("change", applyFilters);
+
+
+    
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const bookCovers = document.querySelectorAll(".book-cover");
+
+    bookCovers.forEach((img) => {
+        const title = img.getAttribute("data-title");
+        const author = img.closest("tr").querySelector("td:nth-child(4)").innerText.trim(); // Get author name
+
+        // Fetch book cover from OpenLibrary API
+        fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&author=${encodeURIComponent(author)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.docs.length > 0) {
+                    let coverId = null;
+
+                    // Find first book in results that has a cover_i field
+                    for (let doc of data.docs) {
+                        if (doc.cover_i) {
+                            coverId = doc.cover_i;
+                            break;
+                        }
+                    }
+
+                    // Update image src if cover found, otherwise use fallback
+                    img.src = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : "/static/default_cover.jpg";
+                } else {
+                    img.src = "/static/default_cover.jpg"; // No book found, use fallback
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching book cover:", error);
+                img.src = "/static/default_cover.jpg"; // Fallback on error
+            });
+    });
+});
+
+
+
+
+
+
 </script>
 
 {% endblock %}

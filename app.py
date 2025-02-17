@@ -20,6 +20,11 @@ def books():
     all_books = Book.select()  # Fetch all books from DB
     return render_template("books.html", books=all_books)
 
+@app.route('/transactions')
+def transactions():
+    all_transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
+    return render_template("transactions.html", transactions=all_transactions)
+
 # Add(Import) Book Page
 @app.route("/books_api", methods=["GET", "POST"])
 def index():
@@ -64,6 +69,43 @@ def download_books_csv():
     response.headers["Content-Disposition"] = "attachment; filename=library_books.csv"
     
     return response
+
+
+
+@app.route('/download-transactions-csv', methods=['GET'])
+def download_transactions_csv():
+    transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
+
+    # Create an in-memory file object
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Write CSV header
+    writer.writerow(["Transaction ID", "Member Name", "Book Title", "Issue Date", "Due Date", "Status"])
+
+    # Write transaction data
+    for transaction in transactions:
+        writer.writerow([
+            transaction.id, 
+            f"{transaction.member.first_name} {transaction.member.last_name}", 
+            transaction.book.title,
+            transaction.issue_date,
+            transaction.due_date,
+            transaction.status
+        ])
+
+    # Move the cursor to the beginning of the file
+    output.seek(0)
+
+    # Create response with CSV content
+    response = Response(output.getvalue(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=library_transactions.csv"
+
+    return response
+
+
+
+
 
 
 # Edit Book Page

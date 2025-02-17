@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-3">📑 Library Transactions</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="/create-transaction" class="btn btn-primary">+ Issue New Transaction</a>
+        <a href="{{ url_for('download_transactions_csv') }}" class="btn btn-success">📥 Download CSV</a>
+        
+        <!-- Filter Dropdowns -->
+        <div class="d-flex">
+            <select id="filterStatus" class="form-select mx-2">
+                <option value="">All Statuses</option>
+                <option value="issued">Issued</option>
+                <option value="returned">Returned</option>
+            </select>
+
+            <select id="filterMember" class="form-select mx-2">
+                <option value="">All Members</option>
+                {% for member in transactions | map(attribute='member.first_name') | unique | list %}
+                <option value="{{ member }}">{{ member }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="input-group mb-3">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search transactions...">
+        <button class="btn btn-outline-secondary" id="sortIssueDate">Sort by Issue Date</button>
+        <button class="btn btn-outline-secondary" id="sortDueDate">Sort by Due Date</button>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Select</th>
+                    <th>Transaction ID</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Issue Date</th>
+                    <th>Due Date</th>
+                    <th>Return Date</th>
+                    <th>Rent Fee</th>
+                    <th>Fine</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="transactionsTable">
+                {% for transaction in transactions %}
+                <tr id="transactionRow-{{ transaction.id }}" class="transaction-row" data-status="{{ transaction.status }}" data-member="{{ transaction.member.first_name }}">
+                    <td><input type="checkbox" class="transaction-checkbox" value="{{ transaction.id }}"></td>
+                    <td>{{ transaction.id }}</td>
+                    <td>{{ transaction.member.first_name }} {{ transaction.member.last_name }}</td>
+                    <td>{{ transaction.book.title }}</td>
+                    <td>{{ transaction.issue_date }}</td>
+                    <td>{{ transaction.due_date }}</td>
+                    <td>{{ transaction.return_date if transaction.return_date else 'Not Returned' }}</td>
+                    <td>${{ transaction.rent_fee }}</td>
+                    <td class="fine-cell" data-fine="{{ transaction.fine }}">${{ transaction.fine }}</td>
+                    <td><span class="badge bg-{% if transaction.status == 'issued' %}warning{% else %}success{% endif %}">{{ transaction.status.capitalize() }}</span></td>
+                    <td>
+                        <a href="/view-transaction/{{ transaction.id }}" class="btn btn-info btn-sm">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        {% if transaction.status == 'issued' %}
+                        <a href="/return-transaction/{{ transaction.id }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-arrow-return-left"></i> Return
+                        </a>
+                        {% endif %}
+                        <button class="btn btn-danger btn-sm delete-transaction" data-id="{{ transaction.id }}">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button class="btn btn-danger mt-3" id="bulkDeleteBtn">Delete Selected</button>
+</div>
+
+<!-- SweetAlert for Confirm Delete -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+// Highlight Fine Amounts
+document.querySelectorAll(".fine-cell").forEach(cell => {
+    let fine = parseFloat(cell.dataset.fine);
+    if (fine > 0) {
+        cell.style.color = "red";
+        cell.style.fontWeight = "bold";
+    }
+});
+
+// Filter Transactions
+document.getElementById("filterStatus").addEventListener("change", filterTransactions);
+document.getElementById("filterMember").addEventListener("change", filterTransactions);
+
+function filterTransactions() {
+    let selectedStatus = document.getElementById("filterStatus").value;
+    let selectedMember = document.getElementById("filterMember").value;
+
+    document.querySelectorAll(".transaction-row").forEach(row => {
+        let rowStatus = row.getAttribute("data-status");
+        let rowMember = row.getAttribute("data-member");
+
+        let statusMatch = !selectedStatus || rowStatus === selectedStatus;
+        let memberMatch = !selectedMember || rowMember === selectedMember;
+
+        row.style.display = statusMatch && memberMatch ? "" : "none";
+    });
+}
+
+// Sorting Transactions
+let sortOrder = { issueDate: 1, dueDate: 1 };
+
+function sortTable(columnIndex, key) {
+    let table = document.getElementById("transactionsTable");
+    let rows = Array.from(table.getElementsByClassName("transaction-row"));
+
+    rows.sort((a, b) => {
+        let valA = a.children[columnIndex].innerText.trim();
+        let valB = b.children[columnIndex].innerText.trim();
+        return sortOrder[key] * valA.localeCompare(valB);
+    });
+
+    sortOrder[key] *= -1;
+    rows.forEach(row => table.appendChild(row));
+}
+
+document.getElementById("sortIssueDate").addEventListener("click", () => sortTable(4, "issueDate"));
+document.getElementById("sortDueDate").addEventListener("click", () => sortTable(5, "dueDate"));
+
+// Search Transactions
+document.getElementById("searchInput").addEventListener("keyup", function () {
+    let input = this.value.toLowerCase();
+    document.querySelectorAll(".transaction-row").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+    });
+});
+
+// Delete Transaction
+document.querySelectorAll(".delete-transaction").forEach(button => {
+    button.addEventListener("click", function () {
+        let transactionId = this.dataset.id;
+        let row = document.getElementById("transactionRow-" + transactionId);
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This transaction will be permanently deleted.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/delete-transaction/${transactionId}`, { method: "DELETE" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        row.remove();
+                        Swal.fire("Deleted!", "Transaction has been removed.", "success");
+                    } else {
+                        Swal.fire("Error!", data.error, "error");
+                    }
+                });
+            }
+        });
+    });
+});
+
+// Bulk Delete Transactions
+document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
+    let selectedTransactions = [...document.querySelectorAll(".transaction-checkbox:checked")];
+    if (selectedTransactions.length === 0) {
+        Swal.fire("No transactions selected!", "Please select transactions to delete.", "warning");
+        return;
+    }
+
+    let transactionIds = selectedTransactions.map(cb => cb.value);
+    Swal.fire({
+        title: "Are you sure?",
+        text: `You are about to delete ${transactionIds.length} transactions.`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete them!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch("/delete-transactions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ transaction_ids: transactionIds })
+            })
+            .then(response => response.json())
+            .then(() => Swal.fire("Deleted!", "Selected transactions have been removed.", "success").then(() => location.reload()));
+        }
+    });
+});
+</script>
+{% endblock %}
