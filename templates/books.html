@@ -4,6 +4,10 @@
 <div class="container mt-4">
     <h2 class="mb-3">📚 Library Books</h2>
 
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.3/dist/sweetalert2.all.min.js"></script>
+
+
     <div class="d-flex justify-content-between mb-3">
         <a class="btn btn-primary" href="/books_api">+ Import Books</a>
         <a class="btn btn-success" href="/download-books-csv">📥 Download CSV</a>
@@ -142,62 +146,92 @@
     });
 
     // Bulk Delete Books
-    document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
-        let selectedBooks = [...document.querySelectorAll(".book-checkbox:checked")];
-        
-        if (selectedBooks.length === 0) {
-            alert("No books selected!");
-            return;
-        }
+document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
+    let selectedBooks = [...document.querySelectorAll(".book-checkbox:checked")];
 
-        // Collect book details for confirmation message
-        let bookDetails = selectedBooks.map(cb => {
-            let row = cb.closest("tr");
-            let title = row.querySelector("td:nth-child(3)").innerText.trim();
-            let stock = row.querySelector("td:nth-child(5)").innerText.trim();
-            return `• ${title} (Stock: ${stock})`;
-        }).join("\n");
+    if (selectedBooks.length === 0) {
+        Swal.fire("No books selected!", "Please select at least one book to delete.", "warning");
+        return;
+    }
 
-        let confirmDelete = confirm(`Do you really want to delete the following books?\n\n${bookDetails}`);
-        if (!confirmDelete) return;
+    // Collect book details for confirmation message
+    let bookDetails = selectedBooks.map(cb => {
+        let row = cb.closest("tr");
+        let title = row.querySelector("td:nth-child(3)").innerText.trim();
+        let stock = row.querySelector("td:nth-child(5)").innerText.trim();
+        return `• ${title} (Stock: ${stock})`;
+    }).join("\n");
 
-        let bookIds = selectedBooks.map(cb => cb.value);
+    Swal.fire({
+        title: "Are you sure?",
+        text: `Do you really want to delete the following books?\n\n${bookDetails}`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete them!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            let bookIds = selectedBooks.map(cb => cb.value);
 
-        fetch("/delete-books", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ book_ids: bookIds })
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            location.reload();
-        })
-        .catch(error => console.error("Error:", error));
-    });
-
-
-    // Individual Book Delete
-    document.querySelectorAll(".delete-book").forEach(button => {
-        button.addEventListener("click", function (event) {
-            event.preventDefault();  // Prevent default link behavior
-            let bookId = this.dataset.id;
-            let bookRow = this.closest("tr");
-            let bookTitle = bookRow.querySelector("td:nth-child(3)").innerText.trim();
-            let stock = bookRow.querySelector("td:nth-child(5)").innerText.trim();
-
-            let confirmDelete = confirm(`Do you really want to delete all ${stock} instance of book "${bookTitle}"?`);
-            if (!confirmDelete) return;
-
-            fetch(`/delete-book/${bookId}`, { method: "DELETE" })
+            fetch("/delete-books", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ book_ids: bookIds })
+            })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                location.reload();  // Refresh the page after deletion
+                if (data.message.includes("referenced in transactions")) {
+                    Swal.fire("Error!", data.message, "error");
+                } else {
+                    Swal.fire("Deleted!", data.message, "success");
+                    location.reload();
+                }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire("Error!", "Something went wrong.", "error");
+            });
+        }
+    });
+});
+
+// Individual Book Delete
+document.querySelectorAll(".delete-book").forEach(button => {
+    button.addEventListener("click", function (event) {
+        event.preventDefault();  // Prevent default link behavior
+        let bookId = this.dataset.id;
+        let bookRow = this.closest("tr");
+        let bookTitle = bookRow.querySelector("td:nth-child(3)").innerText.trim();
+        let stock = bookRow.querySelector("td:nth-child(5)").innerText.trim();
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: `Do you really want to delete all ${stock} instance(s) of book "${bookTitle}"?`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/delete-book/${bookId}`, { method: "DELETE" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message.includes("referenced in transactions")) {
+                        Swal.fire("Error!", data.message, "error");
+                    } else {
+                        Swal.fire("Deleted!", data.message, "success");
+                        location.reload();  // Refresh the page after deletion
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire("Error!", "Something went wrong.", "error");
+                });
+            }
         });
     });
+});
+
 
 
     // Filter Books by Language and Publisher
