@@ -21,8 +21,6 @@ def books():
     all_books = Book.select()  # Fetch all books from DB
     return render_template("books.html", books=all_books)
 
-
-
 @app.route('/transactions')
 def transactions():
     all_transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
@@ -513,5 +511,3 @@ def download_transaction_pdf(id):
         return response
     except Transaction.DoesNotExist:
         return "Transaction not found", 404
-
-
