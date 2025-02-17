@@ -60,10 +60,6 @@
 
         .details {
             margin-top: 10px;
-
-        .details {
-            margin-top: 20px;
-
         }
 
         .details table { 
@@ -139,25 +135,16 @@
                 <tr>
                     <th>Member ID</th>
                     <td>{{ transaction.member.member_id }}</td>
-        <hr>
-        <div class="details">
-            <table>
-                <tr>
-                    <th>Invoice ID</th>
-                    <td>{{ transaction.invoice_id }}</td>
-
                 </tr>
                 <tr>
                     <th>Member Name</th>
                     <td>{{ transaction.member.first_name }} {{ transaction.member.last_name }}</td>
                 </tr>
-
             </table>
 
             <!-- Issuing & Return Details -->
             <div class="section-title">Transaction Details</div>
             <table>
-
                 <tr>
                     <th>Book Title</th>
                     <td>{{ transaction.book.title }}</td>
@@ -196,12 +183,6 @@
                 </tr>
             </table>
         </div>
-
-
-        <div class="print-btn">
-            <button onclick="window.print()">🖨️ Print Invoice</button>
-        </div>
-
 
         <div class="print-btn">
             <button onclick="window.print()">🖨️ Print Invoice</button>
