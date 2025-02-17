@@ -18,10 +18,11 @@
 
             <select id="filterMember" class="form-select mx-2">
                 <option value="">All Members</option>
-                {% for member in transactions | map(attribute='member.first_name') | unique | list %}
+                {% for member in transactions | map(attribute='member.member_id') | unique | list %}
                 <option value="{{ member }}">{{ member }}</option>
                 {% endfor %}
             </select>
+
         </div>
     </div>
 
@@ -40,6 +41,7 @@
                     <th>Select</th>
                     <th>Transaction ID</th>
                     <th>Member</th>
+                    <th>Member ID</th>
                     <th>Book</th>
                     <th>Issue Date</th>
                     <th>Due Date</th>
@@ -52,10 +54,11 @@
             </thead>
             <tbody id="transactionsTable">
                 {% for transaction in transactions %}
-                <tr id="transactionRow-{{ transaction.id }}" class="transaction-row" data-status="{{ transaction.status }}" data-member="{{ transaction.member.first_name }}">
+                <tr id="transactionRow-{{ transaction.id }}" class="transaction-row" data-status="{{ transaction.status }}" data-member="{{ transaction.member.member_id }}">
                     <td><input type="checkbox" class="transaction-checkbox" value="{{ transaction.id }}"></td>
                     <td>{{ transaction.id }}</td>
                     <td>{{ transaction.member.first_name }} {{ transaction.member.last_name }}</td>
+                    <td>{{ transaction.member.member_id }}</td>
                     <td>{{ transaction.book.title }}</td>
                     <td>{{ transaction.issue_date }}</td>
                     <td>{{ transaction.due_date }}</td>
@@ -64,9 +67,10 @@
                     <td class="fine-cell" data-fine="{{ transaction.fine }}">${{ transaction.fine }}</td>
                     <td><span class="badge bg-{% if transaction.status == 'issued' %}warning{% else %}success{% endif %}">{{ transaction.status.capitalize() }}</span></td>
                     <td>
-                        <a href="/view-transaction/{{ transaction.id }}" class="btn btn-info btn-sm">
+                        <a href="{{ url_for('download_transaction_pdf', id=transaction.id) }}" class="btn btn-info btn-sm">
                             <i class="bi bi-eye"></i> View
-                        </a>
+                        </a>                        
+                                               
                         {% if transaction.status == 'issued' %}
                         <a href="/return-transaction/{{ transaction.id }}" class="btn btn-primary btn-sm">
                             <i class="bi bi-arrow-return-left"></i> Return
@@ -99,23 +103,84 @@ document.querySelectorAll(".fine-cell").forEach(cell => {
 });
 
 // Filter Transactions
-document.getElementById("filterStatus").addEventListener("change", filterTransactions);
-document.getElementById("filterMember").addEventListener("change", filterTransactions);
+// Filter Transactions
 
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("Page loaded - Applying filters");
+    applyURLFilters();  // ✅ Ensure this runs on load
+
+    document.getElementById("filterStatus").addEventListener("change", filterTransactions);
+    document.getElementById("filterMember").addEventListener("change", filterTransactions);
+});
+
+// Function to filter transactions
 function filterTransactions() {
     let selectedStatus = document.getElementById("filterStatus").value;
     let selectedMember = document.getElementById("filterMember").value;
 
+    console.log("Filtering transactions - Status:", selectedStatus, "Member ID:", selectedMember); // Debugging
+
     document.querySelectorAll(".transaction-row").forEach(row => {
         let rowStatus = row.getAttribute("data-status");
-        let rowMember = row.getAttribute("data-member");
+        let rowMemberId = row.getAttribute("data-member");
 
         let statusMatch = !selectedStatus || rowStatus === selectedStatus;
-        let memberMatch = !selectedMember || rowMember === selectedMember;
+        let memberMatch = !selectedMember || rowMemberId === selectedMember;
 
         row.style.display = statusMatch && memberMatch ? "" : "none";
     });
+
+    updateURLParams(selectedStatus, selectedMember);
 }
+
+// Function to update URL without reloading the page
+function updateURLParams(status, member) {
+    let url = new URL(window.location);
+    if (status) {
+        url.searchParams.set("status", status);
+    } else {
+        url.searchParams.delete("status");
+    }
+
+    if (member) {
+        url.searchParams.set("member_id", member);
+    } else {
+        url.searchParams.delete("member_id");
+    }
+
+    window.history.replaceState({}, "", url);
+}
+
+// Apply filters from the URL on page load
+function applyURLFilters() {
+    let urlParams = new URLSearchParams(window.location.search);
+    let statusParam = urlParams.get("status");
+    let memberParam = urlParams.get("member_id");
+
+    console.log("URL Params - Status:", statusParam, "Member ID:", memberParam); // Debugging
+
+    if (statusParam) {
+        document.getElementById("filterStatus").value = statusParam;
+    }
+    if (memberParam) {
+        let filterMemberDropdown = document.getElementById("filterMember");
+
+        // Check if the dropdown contains the member ID
+        let memberExists = [...filterMemberDropdown.options].some(option => option.value === memberParam);
+        if (memberExists) {
+            filterMemberDropdown.value = memberParam;
+        } else {
+            console.warn("Member ID from URL not found in dropdown:", memberParam);
+        }
+    }
+
+    filterTransactions(); // ✅ Apply filters immediately
+}
+
+
+
+
+
 
 // Sorting Transactions
 let sortOrder = { issueDate: 1, dueDate: 1 };
