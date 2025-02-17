@@ -39,8 +39,35 @@ LMS_Flask is a Library Management System built using Flask, a lightweight WSGI w
 * **Database:** PostgreSQL (can be replaced with MariaDB or MySQL)
 
 ## Project Structure
-LMS_Flask/ ├── pycache/ ├── app.py ├── books_api.py ├── config.py ├── delete_all_tables.py ├── env/ ├── LICENSE ├── models.py ├── README.md ├── requirements.txt ├── static/ │ ├── css/ │ ├── js/ │ └── images/ ├── templates/ │ ├── base.html │ ├── index.html │ ├── book_details.html │ ├── member_details.html │ └── transaction.html └── tests/ ├── test_app.py ├── test_books_api.py └── test_models.py
+Explore the organized folder structure that makes ShelfDESK an efficient and easily maintainable application:
 
+```bash
+LMS_Flask/
+├── pycache/
+├── app.py               # Main Flask app
+├── books_api.py         # API endpoints for books
+├── config.py            # Configuration file
+├── delete_all_tables.py # Script for clearing all tables
+├── env/                 # Virtual environment
+├── LICENSE              # Project license details
+├── models.py            # Database models
+├── README.md            # Project documentation
+├── requirements.txt     # Project dependencies
+├── static/              # Static files (CSS, JS, images)
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── templates/           # Jinja-based HTML templates
+│   ├── base.html
+│   ├── index.html
+│   ├── book_details.html
+│   ├── member_details.html
+│   └── transaction.html
+└── tests/               # Unit tests for the application
+    ├── test_app.py
+    ├── test_books_api.py
+    └── test_models.py
+```
 
 ## Installation
 
@@ -79,7 +106,7 @@ LMS_Flask/ ├── pycache/ ├── app.py ├── books_api.py ├── 
 ![Home Page](static/home.png)
 ![Home Page Dark](static/homedark.png)
 The home page of the LMS_Flask application provides an overview of the library management system. It includes the following sections:
-![alt text](static/naviactiv.png)
+![Navigation](static/naviactiv.png)
 - **Welcome Message**: A brief introduction to the library management system.
 - **Navigation Links**: Links to different sections of the application such as Books, Members, and Transactions.
 - **Statistics**: Displays the total number of books, members, and transactions in the library.
@@ -124,7 +151,7 @@ The database consists of the following tables:
 ![Library Card Print](static/printcard.png)
 
 - **View Member Details**: Allows the user to view detailed information about a member.
-![View Member List](static/browsemember.png)
+![View Member List](static/members.png)
 
 ### Transactions
 
@@ -134,6 +161,9 @@ The database consists of the following tables:
 ![Return Book](static/returnbook.png)
 - **View Transactions**: Allows the user to view all transactions, including borrow and return records.
 ![View Transactions](static/browsetransaction.png)
+- **Generate Invoice**: Allows the user to generate an invoice for a member showing the books borrowed and their due dates.
+![Issue Invoice](static/issuetrans.png)
+![Return Invoice](static/returntrans.png)
 
 ## Future Enhancements 🚀
 * **User Authentication:** Implement user authentication and authorization for secure access to the system.
@@ -150,7 +180,7 @@ The database consists of the following tables:
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+We welcome contributions to ShelfDESK! Whether it's fixing bugs, adding new features, or improving the documentation, feel free to fork the repository and submit a pull request. 
 
 ## License
 
