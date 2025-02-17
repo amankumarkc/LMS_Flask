@@ -39,8 +39,31 @@
             font-size: 14px;
         }
 
+        .invoice-id {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #0D47A1;
+            border-bottom: 2px solid #1976D2;
+            padding-bottom: 5px;
+        }
+
+        .details {
+            margin-top: 10px;
+
         .details {
             margin-top: 20px;
+
         }
 
         .details table { 
@@ -104,17 +127,37 @@
             <h2>📚 ShelfDESK</h2>
             <p>Library Transaction Receipt</p>
         </div>
+
+        <div class="invoice-id">
+            Invoice ID: {{ transaction.invoice_id }}
+        </div>
+
+        <div class="details">
+            <!-- Member Information -->
+            <div class="section-title">Member Details</div>
+            <table>
+                <tr>
+                    <th>Member ID</th>
+                    <td>{{ transaction.member.member_id }}</td>
         <hr>
         <div class="details">
             <table>
                 <tr>
                     <th>Invoice ID</th>
                     <td>{{ transaction.invoice_id }}</td>
+
                 </tr>
                 <tr>
                     <th>Member Name</th>
                     <td>{{ transaction.member.first_name }} {{ transaction.member.last_name }}</td>
                 </tr>
+
+            </table>
+
+            <!-- Issuing & Return Details -->
+            <div class="section-title">Transaction Details</div>
+            <table>
+
                 <tr>
                     <th>Book Title</th>
                     <td>{{ transaction.book.title }}</td>
@@ -153,9 +196,17 @@
                 </tr>
             </table>
         </div>
+
+
         <div class="print-btn">
             <button onclick="window.print()">🖨️ Print Invoice</button>
         </div>
+
+
+        <div class="print-btn">
+            <button onclick="window.print()">🖨️ Print Invoice</button>
+        </div>
+
         <div class="footer">
             <p>📖 Thank you for using ShelfDESK! Happy Reading! 😊</p>
         </div>

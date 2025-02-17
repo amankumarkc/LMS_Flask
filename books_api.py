@@ -65,3 +65,32 @@ def save_books_to_db(books):
             added_books += 1
     
     return {"success": f"{added_books} new books added, existing books updated!"}
+
+
+
+
+
+# External API Configuration
+BASE_URL = "https://frappe.school"
+ARN_API_ENDPOINT = "/api/method/generate-pro-einvoice-id"
+
+def generate_arn(transaction):
+    """Sends invoice details to the API to get an ARN number."""
+    try:
+        payload = {
+            "customer_name": transaction.member.first_name,
+            "invoice_id": transaction.id,
+            "payable_amount": transaction.rent_fee
+        }
+
+        response = requests.post(f"{BASE_URL}{ARN_API_ENDPOINT}", json=payload)
+
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("arn", None)
+        else:
+            print(f"Failed to fetch ARN. Status Code: {response.status_code}, Response: {response.text}")
+            return None
+    except Exception as e:
+        print(f"Error fetching ARN: {str(e)}")
+        return None
