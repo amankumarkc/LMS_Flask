@@ -3,7 +3,7 @@ from config import db
 from models import Book, Member, Transaction
 from peewee import IntegrityError, DoesNotExist
 from weasyprint import HTML
-from datetime import datetime, timedelta, date
+from datetime import datetime, time, timedelta, date
 from books_api import fetch_books, save_books_to_db, generate_arn
 import csv
 from io import StringIO
@@ -611,3 +611,34 @@ def delete_transactions():
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+    
+
+@app.route('/return-transaction/<int:transaction_id>', methods=['POST'])
+def return_transaction(transaction_id):
+    transaction = Transaction.get_or_none(Transaction.id == transaction_id)
+
+    if not transaction or transaction.status != 'issued':
+        return jsonify({"success": False, "error": "Transaction not found or already returned"}), 400
+
+    data = request.json
+    if not data:
+        return jsonify({"success": False, "error": "Invalid data"}), 400
+
+    transaction.return_date = data.get("return_date")
+    transaction.fine = data.get("fine", 0)
+    transaction.status = "returned"
+    transaction.save()
+
+    # Update the book stock
+    book = transaction.book
+    book.stock += 1
+    book.save()
+    
+    # Reduce the member's outstanding debt by the rent fee amount
+    member = transaction.member
+    if member:
+        member.outstanding_debt = max(0, member.outstanding_debt - transaction.rent_fee)
+        member.save()
+
+    
+    return jsonify({"success": True, "invoice_id": transaction.invoice_id})
