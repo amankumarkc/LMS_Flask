@@ -129,7 +129,7 @@
 
         let formData = new FormData(this);
 
-        fetch("/create-member", {
+        fetch("/member/create", {
             method: "POST",
             body: formData
         })
@@ -145,7 +145,7 @@
                     cancelButtonText: "Add Another",
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = "/members";  
+                        window.location.href = "/member/list";  
                     } else {
                         document.getElementById("member_id_container").classList.add("d-none");
                         document.getElementById("age_container").classList.add("d-none");

@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <h2 class="mb-3">✏️ Edit Book</h2>
 
-    <form action="/edit-books/{{ book.id }}" method="POST">
+    <form action="/book/edit/{{ book.id }}" method="POST">
         <!-- Book ID (Hidden Field) -->
         <input type="hidden" name="bookId" value="{{ book.id }}">
 
@@ -40,7 +40,7 @@
 
         <!-- Actions -->
         <button type="submit" class="btn btn-success">💾 Save Changes</button>
-        <a href="/books" class="btn btn-secondary">↩ Back to Books</a>
+        <a href="/book/list" class="btn btn-secondary">↩ Back to Books</a>
     </form>
 </div>
 {% endblock %}
