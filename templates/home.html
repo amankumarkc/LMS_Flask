@@ -15,8 +15,8 @@
             <div class="carousel-caption d-none d-md-block">
                 <h1 class="display-4 fw-bold">Welcome to ShelfDESK</h1>
                 <p class="lead">Your Modern Library Management Solution</p>
-                <a href="/books" class="btn btn-primary btn-lg me-2">Browse Books</a>
-                <a href="/create-member" class="btn btn-outline-light btn-lg">Join Now</a>
+                <a href="/book/list" class="btn btn-primary btn-lg me-2">Browse Books</a>
+                <a href="/member/create" class="btn btn-outline-light btn-lg">Join Now</a>
             </div>
         </div>
         <div class="carousel-item">
@@ -25,7 +25,7 @@
             <div class="carousel-caption d-none d-md-block">
                 <h1 class="display-4 fw-bold">Extensive Book Collection</h1>
                 <p class="lead">Discover thousands of books across various genres</p>
-                <a href="/books" class="btn btn-primary btn-lg">Explore Library</a>
+                <a href="/book/list" class="btn btn-primary btn-lg">Explore Library</a>
             </div>
         </div>
         <div class="carousel-item">
@@ -34,7 +34,7 @@
             <div class="carousel-caption d-none d-md-block">
                 <h1 class="display-4 fw-bold">Join Our Community</h1>
                 <p class="lead">Become a member today and start your reading journey</p>
-                <a href="/create-member" class="btn btn-primary btn-lg">Register Now</a>
+                <a href="/member/create" class="btn btn-primary btn-lg">Register Now</a>
             </div>
         </div>
     </div>
@@ -98,7 +98,7 @@
                     </div>
                     <h5 class="card-title">Book Management</h5>
                     <p class="card-text">Efficiently manage your entire book collection with our intuitive system.</p>
-                    <a href="/books" class="btn btn-outline-primary mt-3">Manage Books</a>
+                    <a href="/book/list" class="btn btn-outline-primary mt-3">Manage Books</a>
                 </div>
             </div>
         </div>
@@ -110,7 +110,7 @@
                     </div>
                     <h5 class="card-title">Member Management</h5>
                     <p class="card-text">Handle member registrations, cards, and subscriptions seamlessly.</p>
-                    <a href="/members" class="btn btn-outline-success mt-3">View Members</a>
+                    <a href="/member/list" class="btn btn-outline-success mt-3">View Members</a>
                 </div>
             </div>
         </div>
@@ -122,7 +122,7 @@
                     </div>
                     <h5 class="card-title">Quick Transactions</h5>
                     <p class="card-text">Process book issues and returns with our streamlined system.</p>
-                    <a href="/create-transaction" class="btn btn-outline-info mt-3">New Transaction</a>
+                    <a href="/transaction/create" class="btn btn-outline-info mt-3">New Transaction</a>
                 </div>
             </div>
         </div>
@@ -139,19 +139,19 @@
                     <h5 class="mb-0">Quick Actions</h5>
                 </div>
                 <div class="list-group list-group-flush">
-                    <a href="/books_api" class="list-group-item list-group-item-action d-flex align-items-center">
+                    <a href="/book/api" class="list-group-item list-group-item-action d-flex align-items-center">
                         <i class="bi bi-plus-circle me-3"></i>
                         Import New Books
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
-                    <a href="/create-member" class="list-group-item list-group-item-action d-flex align-items-center">
+                    <a href="/member/create" class="list-group-item list-group-item-action d-flex align-items-center">
                         <i class="bi bi-person-plus me-3"></i>
                         Add New Member
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
-                    <a href="/create-transaction" class="list-group-item list-group-item-action d-flex align-items-center">
+                    <a href="/transaction/create" class="list-group-item list-group-item-action d-flex align-items-center">
                         <i class="bi bi-arrow-left-right me-3"></i>
-                        New Transaction
+                        Issue Book
                         <i class="bi bi-chevron-right ms-auto"></i>
                     </a>
                 </div>
@@ -178,24 +178,7 @@
     </div>
 </div>
 
-<!-- Newsletter Section -->
-<div class="container-fluid bg-light py-5 mb-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 text-center">
-                <h3 class="mb-4">Stay Updated with Library News</h3>
-                <form class="row g-3 justify-content-center">
-                    <div class="col-md-8">
-                        <div class="input-group">
-                            <input type="email" class="form-control form-control-lg" placeholder="Enter your email">
-                            <button class="btn btn-primary btn-lg" type="submit">Subscribe</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <style>
     .carousel-item {

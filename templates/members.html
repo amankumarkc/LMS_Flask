@@ -5,8 +5,8 @@
     <h2 class="mb-3">📋 Library Members</h2>  
 
     <div class="d-flex justify-content-between mb-3">
-        <a class="btn btn-primary" href="/create-member">+ Add Member</a>
-        <a href="{{ url_for('download_members_csv') }}" class="btn btn-success mb-3">📥 Download Members CSV</a>
+        <a class="btn btn-primary" href="/member/create">+ Add Member</a>
+        <a href="/member/download-csv" class="btn btn-success mb-3">📥 Download Members CSV</a>
         
         <!-- Filter Dropdowns -->
         <div class="d-flex">
@@ -60,16 +60,25 @@
                     <td class="stock-cell" data-outstanding-debt="{{ member.outstanding_debt }}">{{ member.outstanding_debt }}</td>
                     
                     <td>
-                        <a href="{{ url_for('transactions') }}?member_id={{ member.member_id }}" class="btn btn-primary btn-sm">
+                        {% if member.transactions|length > 0 %}
+                        <a href="/transaction/list?member_id={{ member.member_id }}" class="btn btn-primary btn-sm">
                             <i class="bi bi-file-earmark-text"></i> Transaction
+                        </a>
+                        {% else %}
+                            <a href="/transaction/create?member_id={{ member.member_id }}" class="btn btn-success btn-sm">
+                                <i class="bi bi-book"></i> Issue Book
+                            </a>
+                        {% endif %}
+
+
                         </a>                                               
-                        <a href="/view-card/{{ member.id }}" class="btn btn-info btn-sm">
+                        <a href="/member/view-card/{{ member.id }}" class="btn btn-info btn-sm">
                             <i class="bi bi-person-vcard"></i> View Card
                         </a>
                         <a href="mailto:{{ member.email }}" class="btn btn-success btn-sm">
                             <i class="bi bi-envelope"></i> Mail
                         </a>
-                        <a href="/edit-member/{{ member.id }}" class="btn btn-warning btn-sm">
+                        <a href="/member/edit/{{ member.id }}" class="btn btn-warning btn-sm">
                             <i class="bi bi-pencil"></i> Edit
                         </a>
                         <button class="btn btn-danger btn-sm delete-member" data-id="{{ member.id }}">
@@ -169,7 +178,7 @@ document.querySelectorAll(".stock-cell").forEach(cell => {
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/delete-member/${memberId}`, { method: "DELETE" })
+                    fetch(`/member/delete/${memberId}`, { method: "DELETE" })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -231,7 +240,7 @@ document.querySelectorAll(".stock-cell").forEach(cell => {
     });
 
 function sendBulkDeleteRequest(memberIds) {
-    fetch("/delete-members", {
+    fetch("/member/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ member_ids: memberIds })

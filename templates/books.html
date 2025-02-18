@@ -9,9 +9,9 @@
 
 
     <div class="d-flex justify-content-between mb-3">
-        <a class="btn btn-primary" href="/books_api">+ Import Books</a>
-        <a class="btn btn-primary" href="/create-book">+ Add Book</a>
-        <a class="btn btn-success" href="/download-books-csv">📥 Download CSV</a>
+        <a class="btn btn-primary" href="/book/api">+ Import Books</a>
+        <a class="btn btn-primary" href="/book/create">+ Add Book</a>
+        <a class="btn btn-success" href="/book/download-csv">📥 Download CSV</a>
         
         <!-- Filter Dropdowns -->
         <div class="d-flex">
@@ -69,13 +69,13 @@
                     <td>{{ book.author }}</td>
                     <td class="stock-cell" data-stock="{{ book.stock }}">{{ book.stock }}</td>
                     <td>
-                        <a href="/create-transaction" class="btn btn-primary btn-sm">
+                        <a href="/transaction/create" class="btn btn-primary btn-sm">
                             <i class="bi bi-file-earmark-text"></i> Issue
                         </a>
-                        <a href="/edit-books/{{ book.id }}" class="btn btn-warning btn-sm">
+                        <a href="/book/edit/{{ book.id }}" class="btn btn-warning btn-sm">
                             <i class="bi bi-pencil"></i> Edit
                         </a>
-                        <a href="/delete-book/{{ book.id }}" class="btn btn-danger btn-sm delete-book" data-id="{{ book.id }}">
+                        <a href="/book/delete/{{ book.id }}" class="btn btn-danger btn-sm delete-book" data-id="{{ book.id }}">
                             <i class="bi bi-trash"></i> Delete
                         </a>
                     </td>
@@ -174,7 +174,7 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
         if (result.isConfirmed) {
             let bookIds = selectedBooks.map(cb => cb.value);
 
-            fetch("/delete-books", {
+            fetch("/book/delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ book_ids: bookIds })
@@ -214,7 +214,7 @@ document.querySelectorAll(".delete-book").forEach(button => {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/delete-book/${bookId}`, { method: "DELETE" })
+                fetch(`/book/delete/${bookId}`, { method: "DELETE" })
                 .then(response => response.json())
                 .then(data => {
                     if (data.message.includes("referenced in transactions")) {

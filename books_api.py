@@ -2,7 +2,6 @@ import requests
 from models import Book
 from config import db
 
-
 API_URL = "https://frappe.io/api/method/frappe-library"
 
 def fetch_books(title, authors, isbn, publisher, num_pages, required_books):
@@ -65,10 +64,6 @@ def save_books_to_db(books):
             added_books += 1
     
     return {"success": f"{added_books} new books added, existing books updated!"}
-
-
-
-
 
 # External API Configuration
 BASE_URL = "https://frappe.school"
