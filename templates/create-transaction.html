@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <h2 class="mb-3">📚 Issue New Book</h2>
 
-    <form id="transactionForm" method="POST" action="{{ url_for('create_transaction') }}" class="row g-3 shadow p-4 rounded bg-light">
+    <form id="transactionForm" method="POST" action="/transaction/create" class="row g-3 shadow p-4 rounded bg-light">
         <!-- Member Selection -->
         <div class="col-md-6">
             <label for="member" class="form-label">Member <span class="text-danger">*</span> </label>
@@ -50,10 +50,10 @@
     <!-- Navigation Buttons -->
     <div class="row justify-content-center mt-4">
         <div class="col-lg-10 text-center">
-            <a href="{{ url_for('transactions') }}" class="btn btn-secondary mx-2">
+            <a href="/transaction/list" class="btn btn-secondary mx-2">
                 View Transactions
             </a>
-            <a href="{{ url_for('members') }}" class="btn btn-info mx-2">
+            <a href="/member/list" class="btn btn-info mx-2">
                 View Members
             </a>
         </div>
@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let formData = new FormData(this);
 
-    fetch("/create-transaction", {
+    fetch("/transaction/create", {
         method: "POST",
         body: formData
     })
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonText: "Issue Another Book",
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = "/transactions";
+                    window.location.href = "/transaction/list";
                 } else {
                     // Reset only the book selection and submit button
                     document.getElementById("book").value = "";

@@ -5,8 +5,8 @@
     <h2 class="mb-3">📑 Library Transactions</h2>
 
     <div class="d-flex justify-content-between mb-3">
-        <a href="/create-transaction" class="btn btn-primary">+ Issue New Book</a>
-        <a href="{{ url_for('download_transactions_csv') }}" class="btn btn-success">📥 Download CSV</a>
+        <a href="/transaction/create" class="btn btn-primary">+ Issue New Book</a>
+        <a href="transaction/download-csv" class="btn btn-success">📥 Download CSV</a>
         
         <!-- Filter Dropdowns -->
         <div class="d-flex">
@@ -76,7 +76,7 @@
                     <td><span class="badge bg-{% if transaction.status == 'issued' %}warning{% else %}success{% endif %}">{{ transaction.status.capitalize() }}</span></td>
                     <td>
                         {% if transaction.status == 'returned' %}
-                        <a href="{{ url_for('download_transaction_pdf', id=transaction.id) }}" class="btn btn-info btn-sm">
+                        <a href="/transaction/download-pdf/{{ transaction.id }}" class="btn btn-info btn-sm">
                             <i class="bi bi-eye"></i> Invoice
                         </a>                        
                         {% endif %}
@@ -235,7 +235,7 @@ document.querySelectorAll(".delete-transaction").forEach(button => {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch(`/delete-transaction/${transactionId}`, { method: "DELETE" })
+                fetch(`/transaction/delete/${transactionId}`, { method: "DELETE" })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -269,7 +269,7 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
         cancelButtonText: "Cancel"
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch("/delete-transactions", {
+            fetch("/transaction/delete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transaction_ids: transactionIds })
@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/return-transaction/${transactionId}`, {
+                    fetch(`/transaction/return/${transactionId}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
