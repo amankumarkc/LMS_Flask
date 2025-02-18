@@ -90,7 +90,7 @@
 <div class="container mb-5">
     <h2 class="text-center mb-4">Our Features</h2>
     <div class="row g-4">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center p-4">
                     <div class="feature-icon bg-primary text-white rounded-circle mb-3">
@@ -102,7 +102,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center p-4">
                     <div class="feature-icon bg-success text-white rounded-circle mb-3">
@@ -114,7 +114,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-body text-center p-4">
                     <div class="feature-icon bg-info text-white rounded-circle mb-3">
@@ -126,25 +126,14 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body text-center p-4">
-                    <div class="feature-icon bg-warning text-white rounded-circle mb-3">
-                        <i class="bi bi-graph-up fs-4"></i>
-                    </div>
-                    <h5 class="card-title">Analytics & Reports</h5>
-                    <p class="card-text">Get detailed insights with our comprehensive reporting system.</p>
-                    <a href="#" class="btn btn-outline-warning mt-3">View Reports</a>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </div>
 
 <!-- Quick Actions with Bootstrap List Group -->
 <div class="container mb-5">
     <div class="row">
-        <div class="col-md-6 mb-4">
+        <div class="mb-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Quick Actions</h5>
@@ -168,29 +157,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6 mb-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Today's Overview</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span>Books Issued Today</span>
-                        <span id="booksIssued" class="badge bg-primary rounded-pill"></span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span>Books Returned Today</span>
-                        <span id="booksReturned" class="badge bg-success rounded-pill"></span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span>New Members Today</span>
-                        <span id="newMembers" class="badge bg-info rounded-pill"></span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>Pending Returns</span>
-                        <span id="pendingReturns" class="badge bg-warning rounded-pill"></span>
-                    </div>
-                </div>
                 <script>
                     document.addEventListener("DOMContentLoaded", function () {
                         function getRandomNumber(min, max) {
