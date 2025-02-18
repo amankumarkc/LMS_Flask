@@ -113,6 +113,43 @@ def download_transactions_csv():
     return response
 
 
+@app.route('/create-book', methods=['GET', 'POST'])
+def create_book():
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title')
+            author = request.form.get('author')
+            isbn = request.form.get('isbn')
+            publisher = request.form.get('publisher')
+            stock = int(request.form.get('stock', 5))
+            num_pages = int(request.form.get('num_pages', '0'))
+            publication_date = int(request.form.get('publication_date'))
+            language = request.form.get('language', 'English')
+            mrp = float(request.form.get('mrp', '0.0'))
+
+            # Create new book entry
+            book = Book.create(
+                title=title,
+                author=author,
+                isbn=isbn,
+                publisher=publisher,
+                stock=stock,
+                num_pages=num_pages,
+                publication_date=publication_date,
+                language=language,
+                mrp=mrp
+            )
+            book.save()
+            return jsonify({"message": f"Book '{book.title}' successfully created!"}), 201
+
+        except IntegrityError:
+            return jsonify({"message": "Error: A book with this ISBN already exists."}), 400
+        except Exception as e:
+            return jsonify({"message": f"An error occurred: {str(e)}"}), 500
+
+    return render_template("create-book.html")
+
+
 # Edit Book Page
 @app.route('/edit-books/<int:book_id>', methods=['GET', 'POST'])
 def edit_books(book_id):

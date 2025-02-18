@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block body %}
+
+    <div class="container mt-4">
+        <h2 class="mb-3">📚 Add New Book</h2>
+    
+        <form id="bookForm" method="POST" action="{{ url_for('create_book') }}" class="row g-3 shadow p-4 rounded bg-light">
+            
+            <!-- Title -->
+            <div class="col-md-6">
+                <label for="title" class="form-label">Title<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            
+            <!-- Author -->
+            <div class="col-md-6">
+                <label for="author" class="form-label">Author<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="author" name="author" required>
+            </div>
+    
+            <!-- ISBN -->
+            <div class="col-md-6">
+                <label for="isbn" class="form-label">ISBN<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="isbn" name="isbn" required>
+            </div>
+    
+            <!-- Publisher -->
+            <div class="col-md-6">
+                <label for="publisher" class="form-label">Publisher<span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="publisher" name="publisher" required>
+            </div>
+    
+            <!-- Stock -->
+            <div class="col-md-6">
+                <label for="stock" class="form-label">Number of Books<span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="stock" name="stock" required min="0">
+            </div>
+    
+            <!-- Number of Pages -->
+            <div class="col-md-6">
+                <label for="num_pages" class="form-label">Number of Pages</label>
+                <input type="number" class="form-control" id="num_pages" name="num_pages">
+            </div>
+    
+            <!-- Publication Date -->
+            <div class="col-md-6">
+                <label for="publication_date" class="form-label">Publication Year<span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="publication_date" name="publication_date" required min="1000" max="{{ current_year }}">
+            </div>
+    
+            <!-- Language -->
+            <div class="col-md-6">
+                <label for="language" class="form-label">Language</label>
+                <input type="text" class="form-control" id="language" name="language" value="English" required>
+            </div>
+    
+            <!-- MRP -->
+            <div class="col-md-6">
+                <label for="mrp" class="form-label">Maximum Retail Price</label>
+                <input type="number" step="0.01" class="form-control" id="mrp" name="mrp">
+            </div>
+    
+            <!-- Submit Button -->
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Add Book
+                </button>
+            </div>
+        </form>
+    
+        <!-- Navigation Buttons -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-lg-10 text-center">
+                <a href="{{ url_for('books') }}" class="btn btn-secondary mx-2">
+                    Browse Books
+                </a>
+            </div>
+        </div>
+    
+    </div>
+    
+
+
+<script>
+        document.getElementById("bookForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    let formData = new FormData(this);
+
+    // Convert empty values to null or default values
+    let numPages = document.getElementById("num_pages").value.trim();
+    formData.set("num_pages", numPages === "" ? "0" : numPages);  // Default to 0
+
+    let mrp = document.getElementById("mrp").value.trim();
+    formData.set("mrp", mrp === "" ? "0.0" : mrp);  // Default to 0.0
+
+    fetch("/create-book", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message.includes("successfully created")) {
+            Swal.fire({
+                title: "Success!",
+                text: data.message,
+                icon: "success",
+                showCancelButton: true,
+                confirmButtonText: "Go to Books",
+                cancelButtonText: "Add Another",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/books";  // Redirect to books list
+                } else {
+                    document.getElementById("title").value = "";
+                    document.getElementById("author").value = "";
+                    document.getElementById("isbn").value = "";
+                    document.getElementById("publisher").value = "";
+                    document.getElementById("stock").value = "";
+                    document.getElementById("num_pages").value = "";
+                    document.getElementById("publication_date").value = "";
+                    document.getElementById("language").value = "English";
+                    document.getElementById("mrp").value = "";
+                }
+            });
+        } else {
+            Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+                confirmButtonText: "Try Again"
+            });
+        }
+    })
+    .catch(error => console.error("Error:", error));
+});
+
+</script>
+
+
+
+{% endblock %}
