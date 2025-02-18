@@ -2,7 +2,7 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h2 class="mb-3">📚 Create New Transaction</h2>
+    <h2 class="mb-3">📚 Issue New Book</h2>
 
     <form id="transactionForm" method="POST" action="{{ url_for('create_transaction') }}" class="row g-3 shadow p-4 rounded bg-light">
         <!-- Member Selection -->
@@ -42,7 +42,7 @@
         <!-- Submit Button -->
         <div class="col-12 text-end">
             <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-                Create Transaction
+                Issue Book
             </button>
         </div>
     </form>
