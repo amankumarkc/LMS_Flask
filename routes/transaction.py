@@ -3,12 +3,12 @@ from weasyprint import HTML
 from models import Transaction, Member, Book
 from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify, Response, make_response
-
 from io import StringIO
 from books_api import generate_arn
+import json
 
 bp = Blueprint('transaction', __name__, url_prefix='/transaction')
-
+CONFIG_FILE = "LMS_Flask/rent.json"
 @bp.route('/list')
 def transactions():
     all_transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
@@ -110,7 +110,7 @@ def create_transaction():
                 issue_date=issue_date,
                 due_date=due_date,
                 status='issued',
-                rent_fee=40
+                rent_fee=get_rent()
             )
 
             # Update book stock and member debt
@@ -200,3 +200,9 @@ def return_transaction(transaction_id):
         member.save()
     
     return jsonify({"success": True, "invoice_id": transaction.invoice_id})
+
+
+def get_rent():
+    with open(CONFIG_FILE, "r") as f:
+        config = json.load(f)
+    return config.get("rent_amount", 40)  # Default to 40
