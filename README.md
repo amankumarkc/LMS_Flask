@@ -25,7 +25,7 @@ LMS_Flask is a Library Management System built using Flask, a lightweight WSGI w
 * **Book Management:** Add, edit, delete, and view books with details like title, author, ISBN, genre, etc.
 * **Membership Management:** Create, edit, delete, and view member profiles.
 * **Transaction Management:** Issue and return books, track borrowing history.
-* **Invoicinging:** Generate invoice of issued books for members.
+* **Invoicing:** Generate invoice of issued books for members.
 * **Search and Filter:** Search for books by title or author, and filter by genre.
 * **Print Library Card:** Generate and print library cards for members.
 * **Statistics:** Display the total number of books, members, and transactions.
@@ -43,30 +43,33 @@ Explore the organized folder structure that makes ShelfDESK an efficient and eas
 
 ```bash
 LMS_Flask/
-├── pycache/
-├── app.py               # Main Flask app
-├── books_api.py         # API endpoints for books
-├── config.py            # Configuration file
-├── delete_all_tables.py # Script for clearing all tables
-├── env/                 # Virtual environment
-├── LICENSE              # Project license details
-├── models.py            # Database models
-├── README.md            # Project documentation
-├── requirements.txt     # Project dependencies
-├── static/              # Static files (CSS, JS, images)
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── templates/           # Jinja-based HTML templates
-│   ├── base.html
-│   ├── index.html
-│   ├── book_details.html
-│   ├── member_details.html
-│   └── transaction.html
-└── tests/               # Unit tests for the application
-    ├── test_app.py
-    ├── test_books_api.py
-    └── test_models.py
+├── __pycache__/                # Compiled Python files
+├── env/                        # Virtual environment
+├── static/                     # Static files (CSS, JS, images)
+├── templates/                  # Jinja-based HTML templates
+│   ├── print/                  # Templates for printable documents
+│   │   ├── library-card.html
+│   │   ├── transaction-receipt.html
+│   ├── base.html                # Base template for inheritance
+│   ├── books_api.html           # API documentation (if applicable)
+│   ├── books.html               # Books management page
+│   ├── create-member.html       # Form to add new members
+│   ├── create-transaction.html  # Form to create transactions
+│   ├── edit-books.html          # Edit book details
+│   ├── edit-member.html         # Edit member details
+│   ├── home.html                # Homepage
+│   ├── members.html             # Member listing
+│   ├── transactions.html        # Transactions list
+│   ├── view-card.html           # View member library card
+├── .gitignore                   # Git ignore file
+├── app.py                       # Main Flask application
+├── books_api.py                 # API endpoints for book operations
+├── config.py                    # Configuration file
+├── delete_all_tables.py          # Script for clearing database tables
+├── LICENSE                      # License file
+├── models.py                     # Database models
+├── README.md                    # Project documentation
+├── requirements.txt              # Dependencies list
 ```
 
 ## Installation
