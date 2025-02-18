@@ -5,7 +5,7 @@
     <h2 class="mb-3">📑 Library Transactions</h2>
 
     <div class="d-flex justify-content-between mb-3">
-        <a href="/create-transaction" class="btn btn-primary">+ Issue New Transaction</a>
+        <a href="/create-transaction" class="btn btn-primary">+ Issue/Return Book</a>
         <a href="{{ url_for('download_transactions_csv') }}" class="btn btn-success">📥 Download CSV</a>
         
         <!-- Filter Dropdowns -->
@@ -75,15 +75,17 @@
                     <td class="fine-cell" data-fine="{{ transaction.fine }}">${{ transaction.fine }}</td>
                     <td><span class="badge bg-{% if transaction.status == 'issued' %}warning{% else %}success{% endif %}">{{ transaction.status.capitalize() }}</span></td>
                     <td>
+                        {% if transaction.status == 'returned' %}
                         <a href="{{ url_for('download_transaction_pdf', id=transaction.id) }}" class="btn btn-info btn-sm">
-                            <i class="bi bi-eye"></i> View
+                            <i class="bi bi-eye"></i> Invoice
                         </a>                        
-                        
+                        {% endif %}
                         {% if transaction.status == 'issued' %}
-                        <a href="/create-transaction" class="btn btn-primary btn-sm">
+                        <a href="#" class="btn btn-primary btn-sm return-transaction" data-id="{{ transaction.id }}">
                             <i class="bi bi-arrow-return-left"></i> Return
                         </a>
                         {% endif %}
+
                         <button class="btn btn-danger btn-sm delete-transaction" data-id="{{ transaction.id }}">
                             <i class="bi bi-trash"></i> Delete
                         </button>
@@ -281,6 +283,71 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
                 }
             }).catch(error => Swal.fire("Error!", "Failed to delete transactions.", "error"));
         }
+    });
+});
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".return-transaction").forEach(button => {
+        button.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent default GET request
+
+            let transactionId = this.dataset.id;
+            let row = document.getElementById("transactionRow-" + transactionId);
+
+            if (!row) {
+                Swal.fire("Error!", "Transaction row not found.", "error");
+                return;
+            }
+
+            // Extract transaction details from the row
+            let dueDate = new Date(row.children[6].innerText.trim()); // Due Date column
+            let today = new Date();
+            let lateDays = Math.max(0, Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24))); // Calculate late days
+
+            let finePerDay = 5; // Example fine rate per day
+            let fine = lateDays * finePerDay;
+            let rentFee = parseFloat(row.children[9].innerText.replace("$", "").trim()); // Rent Fee column
+            let totalPayable = rentFee + fine;
+
+            Swal.fire({
+                title: "Confirm Return",
+                html: `
+                    <p><b>Late Days:</b> ${lateDays} days</p>
+                    <p><b>Late Fine:</b> $${fine}</p>
+                    <p><b>Total Payable Amount:</b> $${totalPayable}</p>
+                    <p>Are you sure you want to return this book?</p>
+                `,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Return it",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/return-transaction/${transactionId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            return_date: today.toISOString().split("T")[0], // Send today's date
+                            fine: fine,
+                            total_payable: totalPayable
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update the table row in the frontend
+                            row.children[7].innerText = today.toISOString().split("T")[0]; // Return Date column
+                            row.children[10].innerText = `$${fine}`; // Fine column
+                            row.children[11].innerHTML = `<span class="badge bg-success">Returned</span>`; // Status column
+                            row.children[8].innerHTML = `<span class="text-success">${data.invoice_id}</span>`; // Invoice ID
+                            Swal.fire("Success!", "Book has been returned successfully.", "success");
+                        } else {
+                            Swal.fire("Error!", data.error, "error");
+                        }
+                    })
+                    .catch(error => Swal.fire("Error!", "Failed to return book.", "error"));
+                }
+            });
+        });
     });
 });
 
