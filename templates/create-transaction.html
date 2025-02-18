@@ -5,28 +5,17 @@
     <h2 class="mb-3">📚 Create New Transaction</h2>
 
     <form id="transactionForm" method="POST" action="{{ url_for('create_transaction') }}" class="row g-3 shadow p-4 rounded bg-light">
-        <!-- Status -->
-        <div class="col-md-12">
-            <label for="status" class="form-label">Transaction Status</label>
-            <select class="form-select" id="status" name="status" required>
-                <option value="" selected disabled>Select Status</option>
-                <option value="issued">Issued</option>
-                <option value="returned">Returned</option>
-            </select>
-        </div>
-
         <!-- Member Selection -->
         <div class="col-md-6">
-            <label for="member" class="form-label">Member</label>
-            <select class="form-select" id="member" name="member" required disabled>
+            <label for="member" class="form-label">Member <span class="text-danger">*</span> </label>
+            <select class="form-select" id="member" name="member" required >
                 <option value="" selected disabled>Select Member</option>
             </select>
         </div>
-        
 
         <!-- Book Selection -->
         <div class="col-md-6">
-            <label for="book" class="form-label">Book</label>
+            <label for="book" class="form-label">Book <span class="text-danger">*</span> </label>
             <select class="form-select" id="book" name="book" required disabled>
                 <option value="" selected disabled>Select Book</option>
             </select>
@@ -35,55 +24,19 @@
         <!-- Issue Date -->
         <div class="col-md-6">
             <label for="issue_date" class="form-label">Issue Date</label>
-            <input type="date" class="form-control" id="issue_date" name="issue_date" readonly>
+            <input type="date" class="form-control" id="issue_date" name="issue_date">
         </div>
 
         <!-- Due Date -->
         <div class="col-md-6">
             <label for="due_date" class="form-label">Due Date</label>
-            <input type="date" class="form-control" id="due_date" name="due_date" readonly>
-        </div>
-
-        <!-- Return Date (Hidden for Issue) -->
-        <div class="col-md-6 return-only" style="display: none;">
-            <label for="return_date" class="form-label">Return Date</label>
-            <input type="date" class="form-control" id="return_date" name="return_date" value="{{ today }}">
+            <input type="date" class="form-control" id="due_date" name="due_date">
         </div>
 
         <!-- Outstanding Debt -->
         <div class="col-md-6">
             <label for="outstanding_debt" class="form-label">Current Outstanding Debt</label>
             <input type="number" class="form-control" id="outstanding_debt" readonly>
-        </div>
-
-        <!-- Return-only fields -->
-        <div class="col-md-4 return-only" style="display: none;">
-            <label for="late_days" class="form-label">Late Days</label>
-            <input type="number" class="form-control" id="late_days" name="late_days" readonly>
-        </div>
-
-        <div class="col-md-4 return-only" style="display: none;">
-            <label for="fine" class="form-label">Late Fine</label>
-            <input type="number" class="form-control" id="fine" name="fine" readonly>
-        </div>
-
-        <div class="col-md-4 return-only" style="display: none;">
-            <label for="total_payable" class="form-label">Total Payable</label>
-            <input type="number" class="form-control" id="total_payable" readonly>
-        </div>
-
-        <div class="col-md-6 return-only" style="display: none;">
-            <label for="mode_of_payment" class="form-label">Mode of Payment</label>
-            <select class="form-select" id="mode_of_payment" name="mode_of_payment">
-                <option value="" selected disabled>Select Payment Mode</option>
-                <option value="cash">Cash</option>
-                <option value="online">Online</option>
-            </select>
-        </div>
-
-        <div class="col-md-6 return-only" style="display: none;">
-            <label for="invoice_id" class="form-label">Invoice ID</label>
-            <input type="text" class="form-control" id="invoice_id" name="invoice_id">
         </div>
 
         <!-- Submit Button -->
@@ -93,6 +46,7 @@
             </button>
         </div>
     </form>
+    
     <!-- Navigation Buttons -->
     <div class="row justify-content-center mt-4">
         <div class="col-lg-10 text-center">
@@ -104,63 +58,38 @@
             </a>
         </div>
     </div>
-
 </div>
 
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('transactionForm');
-    const statusSelect = document.getElementById('status');
     const memberSelect = document.getElementById('member');
     const bookSelect = document.getElementById('book');
-    const returnOnlyFields = document.querySelectorAll('.return-only');
     const submitBtn = document.getElementById('submitBtn');
-    const lateDaysInput = document.getElementById('late_days');
-    const fineInput = document.getElementById('fine');
-    const totalPayableInput = document.getElementById('total_payable');
-    const invoiceIdInput = document.getElementById('invoice_id');
-    const modeOfPaymentInput = document.getElementById('mode_of_payment');
-    const returnDateInput = document.getElementById('return_date');
+    const issueDateInput = document.getElementById('issue_date');
+    const dueDateInput = document.getElementById('due_date');
 
     // Parse data from backend
     const availableMembers = JSON.parse('{{ members|tojson|safe }}');
     const availableBooks = JSON.parse('{{ books|tojson|safe }}');
-    const issuedTransactions = JSON.parse('{{ transactions|tojson|safe }}');
 
-    statusSelect.addEventListener('change', function () {
-        memberSelect.disabled = false;
-        memberSelect.innerHTML = '<option value="" selected disabled>Select Member</option>';
-        bookSelect.innerHTML = '<option value="" selected disabled>Select Book</option>';
+    // Set default dates
+    const today = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(today.getDate() + 14);
+    
+    issueDateInput.value = today.toISOString().split('T')[0];
+    dueDateInput.value = dueDate.toISOString().split('T')[0];
 
-        if (this.value === 'issued') {
-            availableMembers.forEach(member => {
-                memberSelect.add(new Option(
-                    `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
-                    member.id
-                ));
-            });
-
-            returnOnlyFields.forEach(field => field.style.display = 'none');
-
-            const today = new Date();
-            const dueDate = new Date();
-            dueDate.setDate(today.getDate() + 14);
-
-            document.getElementById('issue_date').value = today.toISOString().split('T')[0];
-            document.getElementById('due_date').value = dueDate.toISOString().split('T')[0];
-        } else if (this.value === 'returned') {
-            const membersWithBooks = [...new Set(issuedTransactions.map(t => t.member_id))];
-            availableMembers.filter(m => membersWithBooks.includes(m.id)).forEach(member => {
-                memberSelect.add(new Option(
-                    `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
-                    member.id
-                ));
-            });
-
-            returnOnlyFields.forEach(field => field.style.display = 'block');
-
-            calculateLateFine();
-        }
+    // Populate member select
+    availableMembers.forEach(member => {
+        memberSelect.add(new Option(
+            `${member.first_name} ${member.last_name} (ID: ${member.member_id})`,
+            member.id
+        ));
     });
 
     memberSelect.addEventListener('change', function () {
@@ -172,98 +101,88 @@
             document.getElementById('outstanding_debt').value = selectedMember.outstanding_debt;
         }
 
-        if (statusSelect.value === 'issued') {
-            availableBooks.filter(book => book.stock > 0).forEach(book => {
-                bookSelect.add(new Option(
-                    `${book.title} (Stock: ${book.stock})`,
-                    book.id
-                ));
-            });
-        } else if (statusSelect.value === 'returned') {
-            const memberTransactions = issuedTransactions.filter(t => t.member_id === parseInt(this.value));
-            memberTransactions.forEach(transaction => {
-                const book = availableBooks.find(b => b.id === transaction.book_id);
-                if (book) {
-                    bookSelect.add(new Option(
-                        `${book.title} (Issued: ${transaction.issue_date})`,
-                        book.id
-                    ));
-                }
-            });
-        }
+        availableBooks.filter(book => book.stock > 0).forEach(book => {
+            bookSelect.add(new Option(
+                `${book.title} (Stock: ${book.stock})`,
+                book.id
+            ));
+        });
     });
 
     bookSelect.addEventListener('change', function () {
-        if (statusSelect.value === 'returned') {
-            const transaction = issuedTransactions.find(t =>
-                t.member_id === parseInt(memberSelect.value) &&
-                t.book_id === parseInt(this.value)
-            );
-
-            if (transaction) {
-                document.getElementById('issue_date').value = transaction.issue_date;
-                document.getElementById('due_date').value = transaction.due_date;
-            }
-        }
         submitBtn.disabled = false;
     });
 
-    // Event listener to update fine when return date changes
-    returnDateInput.addEventListener('input', function () {
-        calculateLateFine();
+    // Allow manual date changes but enforce minimum 14 days for due date
+    issueDateInput.addEventListener('change', function() {
+        const newIssueDate = new Date(this.value);
+        const newDueDate = new Date(newIssueDate);
+        newDueDate.setDate(newIssueDate.getDate() + 14);
+        dueDateInput.value = newDueDate.toISOString().split('T')[0];
     });
 
-    // Event listener to update fine when late days change
-    lateDaysInput.addEventListener('input', function () {
-        calculateLateFine();
+    dueDateInput.addEventListener('change', function() {
+        const issueDate = new Date(issueDateInput.value);
+        const selectedDueDate = new Date(this.value);
+        const minDueDate = new Date(issueDate);
+        minDueDate.setDate(issueDate.getDate() + 14);
+        
+        if (selectedDueDate < minDueDate) {
+            alert('Due date must be at least 14 days after issue date');
+            this.value = minDueDate.toISOString().split('T')[0];
+        }
     });
 
-    function calculateLateFine() {
-        const returnDate = new Date(returnDateInput.value);
-        const dueDate = new Date(document.getElementById('due_date').value);
+    
 
-        if (!isNaN(returnDate) && !isNaN(dueDate)) {
-            const lateDays = Math.max(0, Math.floor((returnDate - dueDate) / (1000 * 60 * 60 * 24)));
-            const lateFine = lateDays * 5;
-            const outstandingDebt = parseFloat(document.getElementById('outstanding_debt').value) || 0;
+    document.getElementById("transactionForm").addEventListener("submit", function(event) {
+    event.preventDefault();
 
-            lateDaysInput.value = lateDays;
-            fineInput.value = lateFine;
-            totalPayableInput.value = outstandingDebt + lateFine;
-        }
-    }
+    let formData = new FormData(this);
 
-    form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        if (statusSelect.value === 'returned') {
-            if (!invoiceIdInput.value.trim() || !modeOfPaymentInput.value.trim()) {
-                alert("Invoice ID and Mode of Payment are required to complete the return.");
-                return;
-            }
-        }
-
-        const formData = new FormData(form);
-        try {
-            const response = await fetch("{{ url_for('create_transaction') }}", {
-                method: 'POST',
-                body: formData
+    fetch("/create-transaction", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "Success!",
+                text: data.message,
+                icon: "success",
+                showCancelButton: true,
+                confirmButtonText: "View Transactions",
+                cancelButtonText: "Issue Another Book",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "/transactions";
+                } else {
+                    // Reset only the book selection and submit button
+                    document.getElementById("book").value = "";
+                    document.getElementById("submitBtn").disabled = true;
+                }
             });
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert(result.message);
-                window.location.reload();
-            } else {
-                alert(result.message);
-            }
-        } catch (error) {
-            alert('An error occurred while processing the transaction');
+        } else {
+            Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+                confirmButtonText: "Try Again"
+            });
         }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        Swal.fire({
+            title: "Error!",
+            text: "An error occurred while processing the transaction",
+            icon: "error",
+            confirmButtonText: "Try Again"
+        });
     });
 });
-    
-</script>
 
+});
+</script>
 {% endblock %}
