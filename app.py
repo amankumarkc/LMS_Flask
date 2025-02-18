@@ -138,6 +138,10 @@ def delete_book(book_id):
     if not book:
         return jsonify({"message": "Book not found"}), 404
 
+    # Check if the book is linked to any transactions
+    if Transaction.select().where(Transaction.book == book).exists():
+        return jsonify({"message": "This book can't be deleted as it is linked to a transaction."}), 400
+
     book.delete_instance()
     return jsonify({"message": f"Book '{book.title}' has been successfully deleted!"})
 
@@ -151,16 +155,27 @@ def bulk_delete_books():
         return jsonify({"message": "No books selected!"}), 400
 
     deleted_books = []
+    failed_books = []
     for book_id in book_ids:
         book = Book.get_or_none(Book.id == book_id)
         if book:
-            deleted_books.append(f"'{book.title}' ({book.stock} stock)")
-            book.delete_instance()
+            # Check if the book is linked to any transactions
+            if Transaction.select().where(Transaction.book == book).exists():
+                failed_books.append(f"'{book.title}' (Stock: {book.stock})")
+            else:
+                deleted_books.append(f"'{book.title}' ({book.stock} stock)")
+                book.delete_instance()
 
     if not deleted_books:
         return jsonify({"message": "No valid books found to delete!"}), 404
 
+    if failed_books:
+        return jsonify({
+            "message": f"Some books could not be deleted as they are referenced in transactions: {', '.join(failed_books)}"
+        }), 400
+
     return jsonify({"message": f"Deleted books: {', '.join(deleted_books)}"}), 200
+
 
 
 # Display All Members
@@ -310,7 +325,7 @@ def delete_member(member_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+# Delete Bulk Members
 @app.route('/delete-members', methods=['POST'])
 def bulk_delete_members():
     data = request.get_json()

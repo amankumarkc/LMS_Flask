@@ -162,21 +162,35 @@
                     <td>{{ transaction.return_date if transaction.return_date else 'Not Returned' }}</td>
                 </tr>
                 <tr>
-                    <th>Late Days</th>
-                    <td>{{ transaction.late_days }}</td>
-                </tr>
-                <tr>
                     <th>Rent Fee</th>
                     <td>$ {{ transaction.rent_fee }}</td>
                 </tr>
-                <tr>
-                    <th>Fine</th>
-                    <td>$ {{ transaction.fine }}</td>
-                </tr>
-                <tr>
-                    <th>Mode of Payment</th>
-                    <td>{{ transaction.mode_of_payment if transaction.mode_of_payment else 'N/A' }}</td>
-                </tr>
+                
+                <!-- Conditionally display Fine and Mode of Payment based on Transaction Status -->
+                {% if transaction.status == 'issued' %}
+                    <tr style="display:none;">
+                        <th>Fine</th>
+                        <td>$ {{ transaction.fine }}</td>
+                    </tr>
+                    <tr style="display:none;">
+                        <th>Late Days</th>
+                        <td>{{ transaction.late_days }}</td>
+                    </tr>
+                    <tr style="display:none;">
+                        <th>Mode of Payment</th>
+                        <td>{{ transaction.mode_of_payment if transaction.mode_of_payment else 'N/A' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <th>Fine</th>
+                        <td>$ {{ transaction.fine }}</td>
+                    </tr>
+                    <tr>
+                        <th>Mode of Payment</th>
+                        <td>{{ transaction.mode_of_payment if transaction.mode_of_payment else 'N/A' }}</td>
+                    </tr>
+                {% endif %}
+                
                 <tr>
                     <th>Status</th>
                     <td>{{ transaction.status }}</td>
