@@ -1,6 +1,6 @@
 # ShelfDESK
 
-LMS_Flask is a Library Management System built using Flask, a lightweight WSGI web application framework in Python. This project allows users to manage books, members, and transactions in a library.
+ShelfDESK is a Library Management System built using Flask, a lightweight WSGI web application framework in Python. This project allows users to manage books, members, and transactions in a library.
 
 ## Table of Contents
 
