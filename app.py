@@ -419,7 +419,6 @@ def download_pdf(member_id):
 
     return response
 
-# Create Transaction Page
 @app.route('/create-transaction', methods=['GET', 'POST'])
 def create_transaction():
     if request.method == 'GET':
@@ -446,110 +445,59 @@ def create_transaction():
             for book in Book.select().where(Book.stock > 0)
         ]
 
-        # Serialize transactions data
-        transactions_data = [
-            {
-                'id': trans.id,
-                'member_id': trans.member.id,
-                'book_id': trans.book.id,
-                'issue_date': trans.issue_date.strftime('%Y-%m-%d'),
-                'due_date': trans.due_date.strftime('%Y-%m-%d'),
-                'status': trans.status
-            }
-            for trans in Transaction.select().where(Transaction.status == 'issued')
-        ]
-
         return render_template(
             "create-transaction.html",
             members=members_data,
             books=books_data,
-            transactions=transactions_data,
             today=date.today().strftime('%Y-%m-%d')
         )
 
     elif request.method == 'POST':
         try:
-            status = request.form['status']
             member_id = request.form['member']
             book_id = request.form['book']
+            issue_date = datetime.strptime(request.form['issue_date'], '%Y-%m-%d').date()
+            due_date = datetime.strptime(request.form['due_date'], '%Y-%m-%d').date()
+            
             member = Member.get_by_id(member_id)
             book = Book.get_by_id(book_id)
 
-            if status == 'issued':
-                # Check outstanding debt
-                current_outstanding = member.outstanding_debt + 40  # Adding new rent
-                if current_outstanding > 500:
-                    return jsonify({
-                        "success": False,
-                        "message": "Cannot issue book. Outstanding debt would exceed ₹500"
-                    }), 400
-
-                # Create transaction
-                transaction = Transaction.create(
-                    member=member,
-                    book=book,
-                    issue_date=date.today(),
-                    due_date=date.today() + timedelta(days=14),
-                    status='issued',
-                    rent_fee=40
-                )
-
-                # Update book stock and member debt
-                book.stock -= 1
-                book.save()
-                member.outstanding_debt = current_outstanding
-                member.save()
-
+            # Check outstanding debt
+            current_outstanding = member.outstanding_debt + 40  # Adding new rent
+            if current_outstanding > 500:
                 return jsonify({
-                    "success": True,
-                    "message": f"Book '{book.title}' successfully issued to {member.first_name} {member.last_name}"
-                }), 201
+                    "success": False,
+                    "message": "Cannot issue book. Outstanding debt would exceed ₹500"
+                }), 400
 
-            elif status == 'returned':
-                # Invoice ID and Mode of Payment are mandatory
-                mode_of_payment = request.form.get('mode_of_payment')
-                invoice_id = request.form.get('invoice_id')
-                
-                if not mode_of_payment or not invoice_id:
-                    return jsonify({
-                        "success": False,
-                        "message": "Invoice ID and Mode of Payment are required to return a book."
-                    }), 400
-
-                # Get the original transaction
-                transaction = Transaction.get(
-                    (Transaction.member == member) & 
-                    (Transaction.book == book) & 
-                    (Transaction.status == 'issued')
-                )
-                
-                return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d').date()
-                late_days = max(0, (return_date - transaction.due_date).days)
-                late_fine = late_days * 5
-                rent_fee = 40  # Rent fee is fixed
-                total_deduction = rent_fee + late_fine
-
-                # Update transaction
-                transaction.return_date = return_date
-                transaction.late_days = late_days
-                transaction.fine = late_fine
-                transaction.status = 'returned'
-                transaction.mode_of_payment = mode_of_payment
-                transaction.invoice_id = invoice_id
-                transaction.save()
-
-                # Update book stock
-                book.stock += 1
-                book.save()
-
-                # Update member debt (Ensuring it doesn't go negative)
-                member.outstanding_debt = max(0, member.outstanding_debt - total_deduction)
-                member.save()
-
+            # Validate due date is at least 14 days after issue date
+            min_due_date = issue_date + timedelta(days=14)
+            if due_date < min_due_date:
                 return jsonify({
-                    "success": True,
-                    "message": f"Book '{book.title}' successfully returned by {member.first_name} {member.last_name}"
-                }), 200
+                    "success": False,
+                    "message": "Due date must be at least 14 days after issue date"
+                }), 400
+
+            # Create transaction
+            transaction = Transaction.create(
+                member=member,
+                book=book,
+                issue_date=issue_date,
+                due_date=due_date,
+                status='issued',
+                rent_fee=40
+            )
+
+            # Update book stock and member debt
+            book.stock -= 1
+            book.save()
+            member.outstanding_debt = current_outstanding
+            member.save()
+
+            return jsonify({
+                "success": True,
+                "message": f"Book '{book.title}' successfully issued to {member.first_name} {member.last_name}"
+            }), 201
 
         except Exception as e:
             return jsonify({
