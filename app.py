@@ -5,6 +5,7 @@ import os
 
 CONFIG_FILE = "rent.json"
 
+
 app = Flask(__name__)
 
 # Register blueprints
@@ -12,20 +13,10 @@ app.register_blueprint(book.bp)
 app.register_blueprint(member.bp)
 app.register_blueprint(transaction.bp)
 
-
-
 @app.route('/')
 def home():
     return render_template("home.html")
 
-
-
-# CONFIG_FILE = "rent.json"
-
-def get_rent():
-    with open(CONFIG_FILE, "r") as f:
-        config = json.load(f)
-    return config.get("rent_amount", 40)  # Default to 40
  
 @app.route('/update-rent', methods=['POST'])
 def update_rent():
@@ -70,4 +61,3 @@ def settings():
 
 if __name__ == '__main__':
     app.run(debug=True)
-

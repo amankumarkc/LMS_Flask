@@ -8,7 +8,7 @@ from books_api import generate_arn
 import json
 
 bp = Blueprint('transaction', __name__, url_prefix='/transaction')
-CONFIG_FILE = "LMS_Flask/rent.json"
+CONFIG_FILE = "rent.json"
 @bp.route('/list')
 def transactions():
     all_transactions = Transaction.select().join(Member).switch(Transaction).join(Book)
