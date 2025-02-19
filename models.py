@@ -1,5 +1,5 @@
 from peewee import *
-from config import db
+from config.config import db
 from datetime import date, timedelta
 
 class BaseModel(Model):
