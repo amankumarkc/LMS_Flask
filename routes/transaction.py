@@ -88,7 +88,7 @@ def create_transaction():
             book = Book.get_by_id(book_id)
 
             # Check outstanding debt
-            current_outstanding = member.outstanding_debt + 40  # Adding new rent
+            current_outstanding = member.outstanding_debt + get_rent()  # Adding new rent
             if current_outstanding > 500:
                 return jsonify({
                     "success": False,
