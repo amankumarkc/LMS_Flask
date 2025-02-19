@@ -54,4 +54,4 @@ class Transaction(BaseModel):
 
 # Connect and create tables
 db.connect()
-db.create_tables([Book, Member, Transaction])
+db.create_tables([Book, Member, Transaction], safe=True)

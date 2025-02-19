@@ -5,7 +5,6 @@ import os
 
 CONFIG_FILE = "rent.json"
 
-
 app = Flask(__name__)
 
 # Register blueprints
