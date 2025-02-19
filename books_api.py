@@ -1,6 +1,6 @@
 import requests
 from models import Book
-from config import db
+from config.config import db
 
 API_URL = "https://frappe.io/api/method/frappe-library"
 
