@@ -1,5 +1,6 @@
 from peewee import PostgresqlDatabase
 
+
 DATABASE = {
     'name': 'lmsdb',
     'user': 'librarian',
@@ -15,5 +16,3 @@ db = PostgresqlDatabase(
     host=DATABASE['host'], 
     port=DATABASE['port']
 )
-
-

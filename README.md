@@ -76,7 +76,7 @@ LMS_Flask/
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/LMS_Flask.git
+    git clone https://github.com/ManyaGirdhar/LMS_Flask.git
     cd LMS_Flask
     ```
 
@@ -93,7 +93,7 @@ LMS_Flask/
 
 4. Set up the database:
     ```sh
-    python app.py
+    python models.py
     ```
 
 ## Usage 🚀

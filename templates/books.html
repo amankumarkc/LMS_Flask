@@ -147,7 +147,7 @@
     });
 
     // Bulk Delete Books
-document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
+    document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
     let selectedBooks = [...document.querySelectorAll(".book-checkbox:checked")];
 
     if (selectedBooks.length === 0) {
@@ -155,7 +155,6 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
         return;
     }
 
-    // Collect book details for confirmation message
     let bookDetails = selectedBooks.map(cb => {
         let row = cb.closest("tr");
         let title = row.querySelector("td:nth-child(3)").innerText.trim();
@@ -174,18 +173,27 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
         if (result.isConfirmed) {
             let bookIds = selectedBooks.map(cb => cb.value);
 
-            fetch("/book/delete", {
+            fetch("/book/delete-bulk", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ book_ids: bookIds })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.message.includes("referenced in transactions")) {
-                    Swal.fire("Error!", data.message, "error");
+                if (data.success) {
+                    let deletedList = data.deleted_books.map(b => `• ${b.title} (Stock: ${b.stock})`).join("\n");
+                    let failedList = data.failed_books.map(b => `• ${b.title} (Stock: ${b.stock})`).join("\n");
+
+                    let message = `Deleted Books:\n${deletedList}`;
+                    if (failedList) {
+                        message += `\n\n❌ Some books couldn't be deleted as they are linked to transactions:\n${failedList}`;
+                    }
+
+                    Swal.fire("Bulk Delete Result", message, "info").then(() => {
+                        location.reload();
+                    });
                 } else {
-                    Swal.fire("Deleted!", data.message, "success");
-                    location.reload();
+                    Swal.fire("Error!", data.message, "error");
                 }
             })
             .catch(error => {
@@ -195,6 +203,7 @@ document.getElementById("bulkDeleteBtn").addEventListener("click", function () {
         }
     });
 });
+
 
 // Individual Book Delete
 document.querySelectorAll(".delete-book").forEach(button => {
